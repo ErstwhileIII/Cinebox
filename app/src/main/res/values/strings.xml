@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Cinebox</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- for preferences -->
+    <string name="pref_movie_order_key">prefMovieOrder</string>
+    <string name="pref_movie_order_defaultvalue">popularity</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">in Detail Fragment</string>
+    <string name="Released">Released: </string>
+    <string name="detail_label_popularity">Popularity</string>
+    <string name="detail_label_rating">Rating</string>
+    <string name="movie_preferences">Movie preferences</string>
+    <string name="pref_movie_order_title">Movie Order</string>
+</resources>

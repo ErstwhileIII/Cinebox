@@ -1,0 +1,82 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.velocikey.android.learning.cinebox.MovieDetailFragment">
+
+    <ImageView
+        android:id="@+id/detail_poster"
+        android:layout_width="140dp"
+        android:layout_height="210dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="start"
+        android:contentDescription="movie poster"
+        android:src="@mipmap/ic_launcher"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"/>
+
+    <TextView
+        android:id="@+id/detail_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/detail_poster"
+        android:text="-->title"
+        android:textStyle="bold|italic"
+        android:textColor="@color/primary_text"
+        android:background="@color/primary_light"/>
+
+    <TextView
+        android:id="@+id/detail_release_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/detail_title"
+        android:layout_toRightOf="@id/detail_poster"
+        android:text="-->releaseDate"
+        android:textColor="@color/secondary_text"/>
+
+    <TextView
+        android:id="@+id/detail_popularity_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="4dp"
+        android:layout_below="@id/detail_release_date"
+        android:layout_toRightOf="@id/detail_poster"
+        android:text="@string/detail_label_popularity"/>
+
+    <TextView
+        android:id="@+id/detail_popularity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/detail_release_date"
+        android:layout_toRightOf="@id/detail_popularity_label"
+        android:text="-->popularity"/>
+
+    <TextView
+        android:id="@+id/detail_rating_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="4dp"
+        android:layout_below="@id/detail_popularity"
+        android:layout_toRightOf="@id/detail_poster"
+        android:text="@string/detail_label_rating"/>
+
+    <TextView
+        android:id="@+id/detail_rating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/detail_popularity"
+        android:layout_toRightOf="@id/detail_rating_label"
+        android:text="-->rating"/>
+
+    <TextView
+        android:id="@+id/detail_overview"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/detail_poster"
+        android:text="-->overview"/>
+
+</RelativeLayout>
