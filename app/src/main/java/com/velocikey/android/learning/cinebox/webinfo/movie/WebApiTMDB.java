@@ -1,8 +1,11 @@
-package com.velocikey.android.learning.cinebox;
+package com.velocikey.android.learning.cinebox.webinfo.movie;
 
 import android.net.Uri;
 import android.util.Log;
 
+
+import com.velocikey.android.learning.cinebox.webinfo.WebApiKeys;
+import com.velocikey.android.learning.cinebox.webinfo.WebApi;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,7 +14,6 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Vector;
 
 /** The class provides all interaction with The MovieDatabase web api.
  *
@@ -25,7 +27,7 @@ public class WebApiTMDB extends WebApi {
     // TODO consider putting apikey into configuration?
     private static final String TMDB_PROTOCOL = "https://";
     private static final String API_KEY_NAME = "api_key";
-    private static final String API_KEY_VALUE = "e914a9254a8c1d706f92d0474b4a7ab5";
+    //private static final String API_KEY_VALUE = "e914a9254a8c1d706f92d0474b4a7ab5";
     private static final String API_BASE_URL = TMDB_PROTOCOL + "api.themoviedb.org";
     private static final String API_Version = "3";
 
@@ -85,7 +87,7 @@ public class WebApiTMDB extends WebApi {
             Uri builtUri = Uri.parse(DISCOVER_MOVIES).buildUpon()
                     .appendQueryParameter(PARAM_ORDERBY, orderBy)
                     .appendQueryParameter(PARAM_PAGE, "" + page)
-                    .appendQueryParameter(API_KEY_NAME, API_KEY_VALUE)
+                    .appendQueryParameter(API_KEY_NAME, WebApiKeys.getTMDBApiKey())
                     .build();
             page++;
             try {

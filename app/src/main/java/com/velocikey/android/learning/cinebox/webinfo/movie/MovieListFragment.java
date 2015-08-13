@@ -1,8 +1,7 @@
-package com.velocikey.android.learning.cinebox;
+package com.velocikey.android.learning.cinebox.webinfo.movie;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -14,8 +13,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.velocikey.android.learning.cinebox.R;
+
 import java.util.ArrayList;
-import java.util.Vector;
 
 
 /**

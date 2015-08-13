@@ -1,4 +1,4 @@
-package com.velocikey.android.learning.cinebox;
+package com.velocikey.android.learning.cinebox.webinfo;
 
 import android.util.Log;
 

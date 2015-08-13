@@ -1,4 +1,4 @@
-package com.velocikey.android.learning.cinebox;
+package com.velocikey.android.learning.cinebox.webinfo.movie;
 
 import android.app.Activity;
 import android.content.Context;
@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +15,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+import com.velocikey.android.learning.cinebox.R;
+import com.velocikey.android.learning.cinebox.SettingsActivity;
 
 
 /**
@@ -25,15 +26,15 @@ import com.squareup.picasso.Picasso;
  * to handle interaction events.
  */
 public class MovieDetailFragment extends Fragment {
+    public static final String ARG_movieId = "movieId";
+    public static final String ARG_title = "title";
+    public static final String ARG_releaseDate = "releaseDate";
+    public static final String ARG_overview = "overview";
+    public static final String ARG_popularity = "popularity";
+    public static final String ARG_rating = "rating";
+    public static final String ARG_posterPath = "posterPath";
     // Class fields
     private static final String LOG_TAG = MovieDetailFragment.class.getSimpleName();//TODO consider passing position in data array (and the array of course)
-    protected static final String ARG_movieId = "movieId";
-    protected static final String ARG_title = "title";
-    protected static final String ARG_releaseDate = "releaseDate";
-    protected static final String ARG_overview = "overview";
-    protected static final String ARG_popularity = "popularity";
-    protected static final String ARG_rating = "rating";
-    protected static final String ARG_posterPath = "posterPath";
     // Object fields
     private static Context mContext;
     private static int movieId;
@@ -52,14 +53,32 @@ public class MovieDetailFragment extends Fragment {
     //TODO not sure this is needed
     public static MovieDetailFragment newInstance(MovieInfo movieInfo) {
         MovieDetailFragment fragment = new MovieDetailFragment();
-        fragment.movieId = movieInfo.getMovieId();
-        fragment.title = movieInfo.getTitle();
-        fragment.releaseDate = movieInfo.getReleaseDate();
-        fragment.overview = movieInfo.getOverview();
-        fragment.popularity = movieInfo.getPopularity();
-        fragment.rating = movieInfo.getRating();
-        fragment.posterPath = movieInfo.getOverview();
+        movieId = movieInfo.getMovieId();
+        title = movieInfo.getTitle();
+        releaseDate = movieInfo.getReleaseDate();
+        overview = movieInfo.getOverview();
+        popularity = movieInfo.getPopularity();
+        rating = movieInfo.getRating();
+        posterPath = movieInfo.getOverview();
         return fragment;
+    }
+
+    // TODO: Rename method, update argument and hook method into UI event
+    public void onButtonPressed(Uri uri) {
+        if (mListener != null) {
+            mListener.onMovieDetailFragmentInteraction(uri);
+        }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mListener = (OnMovieDetailFragmentListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnMovieListFragmentListener");
+        }
     }
 
     @Override
@@ -91,19 +110,18 @@ public class MovieDetailFragment extends Fragment {
         }
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
 
-            //((TextView) rootView.findViewById(R.id.detail_movie_id)).setText("" + movieId);
-            ((TextView) rootView.findViewById(R.id.detail_title)).setText("" + title);
-            ((TextView) rootView.findViewById(R.id.detail_release_date)).setText("" + releaseDate);
-            ((TextView) rootView.findViewById(R.id.detail_popularity)).setText("" + new Float(popularity).toString());
-            ((TextView) rootView.findViewById(R.id.detail_rating)).setText("" + new Float(rating).toString());
-            ((TextView) rootView.findViewById(R.id.detail_overview)).setText("" + overview);
+        //((TextView) rootView.findViewById(R.id.detail_movie_id)).setText("" + movieId);
+        ((TextView) rootView.findViewById(R.id.detail_title)).setText("" + title);
+        ((TextView) rootView.findViewById(R.id.detail_release_date)).setText("" + releaseDate);
+        ((TextView) rootView.findViewById(R.id.detail_popularity)).setText("" + new Float(popularity).toString());
+        ((TextView) rootView.findViewById(R.id.detail_rating)).setText("" + new Float(rating).toString());
+        ((TextView) rootView.findViewById(R.id.detail_overview)).setText("" + overview);
         ImageView poster = (ImageView) rootView.findViewById(R.id.detail_poster);
 
         if (posterPath != null) {
@@ -117,6 +135,12 @@ public class MovieDetailFragment extends Fragment {
     }
 
     @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
@@ -124,30 +148,6 @@ public class MovieDetailFragment extends Fragment {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onMovieDetailFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnMovieDetailFragmentListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnMovieListFragmentListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
     }
 
     /**
@@ -162,7 +162,7 @@ public class MovieDetailFragment extends Fragment {
      */
     public interface OnMovieDetailFragmentListener {
         // TODO: Update argument type and name
-        public void onMovieDetailFragmentInteraction(Uri uri);
+        void onMovieDetailFragmentInteraction(Uri uri);
     }
 
 }

@@ -1,4 +1,4 @@
-package com.velocikey.android.learning.cinebox;
+package com.velocikey.android.learning.cinebox.webinfo.movie;
 
 import android.content.Context;
 import android.net.Uri;
@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
+import com.velocikey.android.learning.cinebox.R;
 
 import java.util.ArrayList;
 

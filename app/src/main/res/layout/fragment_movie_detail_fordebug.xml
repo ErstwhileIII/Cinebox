@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.velocikey.android.learning.cinebox.MovieDetailFragment">
+    tools:context="com.velocikey.android.learning.cinebox.webinfo.movie.MovieDetailFragment">
 
     <TextView
         android:id="@+id/detail_welcome"
@@ -14,44 +14,44 @@
 
     <TextView
         android:id="@+id/detail_movie_id"
-        android:layout_below="@id/detail_welcome"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/detail_welcome"
         android:text="-->movieid"/>
 
     <TextView
         android:id="@+id/detail_title"
-        android:layout_below="@id/detail_movie_id"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/detail_movie_id"
         android:text="-->title"/>
 
     <TextView
         android:id="@+id/detail_release_date"
-        android:layout_below="@id/detail_title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/detail_title"
         android:text="-->releaseDate"/>
 
     <TextView
         android:id="@+id/detail_popularity"
-        android:layout_below="@id/detail_release_date"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/detail_release_date"
         android:text="-->popularity"/>
 
     <TextView
         android:id="@+id/detail_rating"
-        android:layout_below="@id/detail_popularity"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/detail_popularity"
         android:text="-->rating"/>
 
     <TextView
         android:id="@+id/detail_overview"
-        android:layout_below="@id/detail_rating"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/detail_rating"
         android:text="-->overview"/>
 
 </RelativeLayout>
