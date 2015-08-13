@@ -22,9 +22,10 @@ public class MovieInfoAdapter
         extends RecyclerView.Adapter<MovieInfoAdapter.MovieInfoViewHolder>{
     // Class fields
     private static final String LOG_TAG = MovieInfoAdapter.class.getSimpleName();
+
     private final Context mContext;
-    private ArrayList<MovieInfo> mMovieInformation;
     private final MovieListFragment.onMovieListFragmentListener mMovieListListener;
+    private ArrayList<MovieInfo> mMovieInformation;
 
     // Object Fields
 
@@ -55,6 +56,18 @@ public class MovieInfoAdapter
         Picasso.with(mContext).load(uri).into(holder.poster);
     }
 
+    /**
+     * @return number of items in the adapter is currently handling
+     */
+    @Override
+    public int getItemCount() {
+        if (mMovieInformation == null) {
+            return 0;
+        } else {
+            return mMovieInformation.size();
+        }
+    }
+
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
@@ -71,20 +84,6 @@ public class MovieInfoAdapter
         Log.v(LOG_TAG, "onDetachedFromRecyclerView");
     }
 
-
-    /**
-     *
-     * @return number of items in the adapter is currently handling
-     */
-    @Override
-    public int getItemCount() {
-        if (mMovieInformation == null) {
-            return 0;
-        } else {
-            return mMovieInformation.size();
-        }
-    }
-
     /**
      * Set the movie information to a new array;
      *
@@ -95,7 +94,7 @@ public class MovieInfoAdapter
         if (mMovieInformation == null || mMovieInformation.size() == 0) {
             Log.v(LOG_TAG, "setMovie: mMovieInformation null? " + (mMovieInformation == null));
             mMovieInformation = movieInformation;
-            this.notifyDataSetChanged();;
+            this.notifyDataSetChanged();
         } else {
             //TODO better way to handle extensions?
             Log.v(LOG_TAG, "setMovie: old size (" + mMovieInformation.size()+ ") , new size=" + movieInformation.size());

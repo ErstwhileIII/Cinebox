@@ -1,10 +1,12 @@
 package com.velocikey.android.learning.cinebox;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -37,6 +39,12 @@ public class MovieListFragment extends Fragment {
     private MovieInfoAdapter mMovieInfoAdapter;
     private RecyclerView mRecyclerView;
     private GridLayoutManager mLayoutManager;
+    /**
+     * The next page to get information from using the asynchronous task
+     */
+    private int currentPage = 1; //
+    private int pagesToGet = 2; //
+    //TODO consider making this dynamic
 
     public MovieListFragment() {
         Log.v(LOG_TAG, "Constructor");
@@ -69,7 +77,7 @@ public class MovieListFragment extends Fragment {
     /**
      * (Lifecycle order #2)
      *
-     * @param savedInstanceState
+     * @param savedInstanceState the previous state of the fragment, if it was saved
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,12 +90,23 @@ public class MovieListFragment extends Fragment {
         //TODO handle settings (popularity or rating)
 
         //mMovieInfoList = DebugMovieInfo.getMovieInfoList();
-        mMovieInfoList = new ArrayList<MovieInfo>();
+        mMovieInfoList = new ArrayList<>();
         // initiate movie information task
-        String defaultOrder = "Popularity";
-        FetchMovieInfoTask movieInfoTask = new FetchMovieInfoTask();
-        movieInfoTask.execute(defaultOrder);
+//        String defaultOrder = "Popularity";
+//
+//        FetchMovieInfoTask movieInfoTask = new FetchMovieInfoTask();
+//        movieInfoTask.execute(defaultOrder);
+        getMovies();
+    }
 
+    private void getMovies() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String movieOrder = preferences.getString(getString(R.string.pref_movie_order_key),
+                getString(R.string.pref_movie_order_defaultvalue));
+        Log.v(LOG_TAG, "Requested movie order is: " + movieOrder);
+        FetchMovieInfoTask movieInfoTask = new FetchMovieInfoTask();
+        //TODO adjust to pass page to return
+        movieInfoTask.execute(movieOrder);
     }
 
     /**
@@ -96,7 +115,7 @@ public class MovieListFragment extends Fragment {
      * @param inflater           to be used to inflate views
      * @param parent             the container for this fragment
      * @param savedInstanceState and saved state (null if none)
-     * @return
+     * @return the inflated RecyclerView
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent,
@@ -117,7 +136,7 @@ public class MovieListFragment extends Fragment {
     /**
      * (Lifecycle #4)
      *
-     * @param savedInstanceState
+     * @param savedInstanceState The previous state of the fragment, if saved
      */
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -128,7 +147,7 @@ public class MovieListFragment extends Fragment {
     /**
      * (Lifecycle 5 (optional)
      *
-     * @param savedInstanceState
+     * @param savedInstanceState the prefious state of the fragment, if saved
      */
     @Override
     public void onViewStateRestored(Bundle savedInstanceState) {
@@ -151,7 +170,6 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        ;
         Log.v(LOG_TAG, "onResume: ");
     }
 
@@ -213,7 +231,7 @@ public class MovieListFragment extends Fragment {
      */
     public interface onMovieListFragmentListener {
         // TODO: Update argument type and name
-        public void onMovieListFragmentInteraction(MovieInfo movieInfo);
+        void onMovieListFragmentInteraction(MovieInfo movieInfo);
 
     }
 
@@ -241,29 +259,42 @@ public class MovieListFragment extends Fragment {
             WebApiTMDB tmdb = new WebApiTMDB();
             Log.v(LOG_TAG, "about to get movies");
             //String result = tmdb.getRawMovie("sort_by=popularity.desc");
-            String sortByValue = "popularity.desc";
+            Log.v(LOG_TAG, "params=" + params[0]);
+            String sortByValue = params[0] + ".desc";
+            Log.v(LOG_TAG, "order clause = " + sortByValue);
             if (params.length > 0) {
                 //TODO handle these strings in preferences
-                if (params[0].equalsIgnoreCase("Popularity")) {
+                if (params[0].equalsIgnoreCase("popularity")) {
                     sortByValue = "popularity.desc";
-                } else if (params[0].equalsIgnoreCase("Critic Rating")) {
+                } else if (params[0].equalsIgnoreCase("vote_average")) {
                     sortByValue = "vote_average.desc";
+                } else if (params[0].equalsIgnoreCase("release_date")) {
+                    sortByValue = "release_date.desc";
                 }
             }
 
-            ArrayList<MovieInfo> movieInfo = tmdb.getMovieInfo(sortByValue, MOVIE_QUERY_COUNT);
+            ArrayList<MovieInfo> result = tmdb.getMovieInfo(sortByValue, currentPage, pagesToGet);
+            currentPage = currentPage + pagesToGet;
             Log.v(LOG_TAG, "back from movie request");
             //TODO consider putting into database here?
-            return movieInfo;
+            return result;
         }
 
         @Override
         protected void onPostExecute(ArrayList<MovieInfo> result) {
-            Log.v(LOG_TAG, "Finished movie acquisition (" + result.size() + " entries)");
-            mMovieInfoList = result;
+
+            Log.v(LOG_TAG, "onPostExecite, old size(" + mMovieInfoList.size()
+                    + " additional movies (" + result.size() + ")");
+            //TODO optimize to handle new informatoin and added information
+            if (mMovieInfoList.size() < 1) {
+                mMovieInfoList = result;
+            } else {
+                mMovieInfoList.addAll(result);
+            }
             Log.v(LOG_TAG, "Now mMovieList size is " + mMovieInfoList.size());
             // handle putting posters into the movie adapter view
             mMovieInfoAdapter.setMovie(mMovieInfoList);
+
         }
     }
 }

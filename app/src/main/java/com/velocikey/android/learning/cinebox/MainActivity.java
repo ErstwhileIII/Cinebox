@@ -21,7 +21,7 @@ public class MainActivity extends Activity
 
     /** Mainactiviyty controlling movie information
      *
-     * @param savedInstanceState
+     * @param savedInstanceState information if the status of this Activity was saved.
      *
      */
     @Override
@@ -57,8 +57,7 @@ public class MainActivity extends Activity
         Log.v(LOG_TAG, "onOptionsItemSelected with id = " + id);
         //TODO handle settings
         //noinspection SimplifiableIfStatement
-        boolean enableSettings = false;
-        if (enableSettings && (id == R.id.action_settings)) {
+        if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }

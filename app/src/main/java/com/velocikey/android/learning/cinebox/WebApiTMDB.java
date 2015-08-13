@@ -36,7 +36,7 @@ public class WebApiTMDB extends WebApi {
     private static final String IMAGE_SIZE = "w185";
 
     // Discover movie paramaters
-    private static final String PARAM_ORDERBY = "sort by";
+    private static final String PARAM_ORDERBY = "sort_by";
     private static final String PARAM_PAGE = "page";
 
 
@@ -58,28 +58,36 @@ public class WebApiTMDB extends WebApi {
     // Object fields
     Uri builtUri;
 
-    public ArrayList<MovieInfo> getMovieInfo(String orderBy, int resultsWanted) {
-        ArrayList<MovieInfo> results = new ArrayList<MovieInfo>(resultsWanted);
+    /**
+     * Obtain movie information for the pages specivied from The Movie Database (TMDB)
+     *
+     * @param orderBy     the order to be used when retrieving movie information
+     * @param startPage   what is the page to start obtianing information
+     * @param pagesWanted how many pages to get
+     * @return list of movie information items
+     */
+    public ArrayList<MovieInfo> getMovieInfo(String orderBy, int startPage, int pagesWanted) {
+        ArrayList<MovieInfo> results = new ArrayList<>(20);
         JSONObject movieList;
         JSONArray movies;
         int page;
+        int pageNumber;
         int pages;
         int reportCount;
         int resultCount = 0;
 
-        page = 0;
+        page = startPage;
         URL url;
         boolean error = false;
         // Continue making web api requests until sufficient results are obtained (unless there is an error)
-        while (results.size() < resultsWanted & !error) {
+        while ((page < startPage + pagesWanted) && !error) {
             // TMDB pages start at 1, not zero
-            page = page + 1;
             Uri builtUri = Uri.parse(DISCOVER_MOVIES).buildUpon()
                     .appendQueryParameter(PARAM_ORDERBY, orderBy)
                     .appendQueryParameter(PARAM_PAGE, "" + page)
                     .appendQueryParameter(API_KEY_NAME, API_KEY_VALUE)
                     .build();
-
+            page++;
             try {
                 url = new URL(builtUri.toString());
             } catch (MalformedURLException e) {
@@ -105,7 +113,7 @@ public class WebApiTMDB extends WebApi {
                 movieList = new JSONObject(rawJson);
 
                 movies = movieList.getJSONArray(TMDB_REPORTS);
-                page = movieList.getInt(TMDB_PAGE);
+                pageNumber = movieList.getInt(TMDB_PAGE);
                 pages = movieList.getInt(THDB_PAGES);
                 reportCount = movieList.getInt(TMDB_RESULTS);
 
@@ -127,15 +135,7 @@ public class WebApiTMDB extends WebApi {
                 error = true;
             }
         }
-        Log.v(LOG_TAB, "Number of queries is " + page);
         return results;
-    }
-
-    public static String getImageURL(String imagePath, int size) {
-        String result;
-        //TODO handle small and large image results
-        result = IMAGE_BASE_URL + "/" + IMAGE_SIZE + imagePath;
-        return result;
     }
 }
 
