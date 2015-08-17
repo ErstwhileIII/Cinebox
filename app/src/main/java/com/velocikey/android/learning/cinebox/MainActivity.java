@@ -21,7 +21,6 @@ public class MainActivity extends Activity
 
     // Object fields
     private FragmentManager fragmentManager;
-    private MovieListFragment movieListFragment;
 
     /** Mainactiviyty controlling movie information
      *
@@ -32,10 +31,14 @@ public class MainActivity extends Activity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.v(LOG_TAG, "onCreate: establish content for main view (" + R.layout.activity_main);
+        if (savedInstanceState != null) {
+            Log.v(LOG_TAG, "savedInstanceState info present");
+
+        }
         setContentView(R.layout.activity_main);
         // load the main movie list fragment
         fragmentManager = getFragmentManager();
-        movieListFragment = new MovieListFragment();
+        MovieListFragment movieListFragment = new MovieListFragment();
 
         fragmentManager.beginTransaction()
                 .add(R.id.main_frame, movieListFragment)
@@ -44,7 +47,14 @@ public class MainActivity extends Activity
     }
 
     @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        Log.v(LOG_TAG, "onSaveInstanceState");
+        //TODO handle
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.v(LOG_TAG, "onCreateOptionsMenu");
         //TODO add menu item for settings
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -67,6 +77,9 @@ public class MainActivity extends Activity
         }
         return super.onOptionsItemSelected(item);
     }
+
+
+    // Methods called from fragments
 
     /** Called when the user selects a particular movie list item.
      *
@@ -92,12 +105,16 @@ public class MainActivity extends Activity
                 .replace(R.id.main_frame,movieDetailFragment)
                 .addToBackStack("detail")
                 .commit();
-
     }
 
+    /**
+     * listener for selections in the MovieDetailFragment view spresented
+     *
+     * @param uri dummy or now
+     */
     @Override
     public void onMovieDetailFragmentInteraction(Uri uri) {
+        //TODO adjsut arguments and functions provided
 
     }
-
 }

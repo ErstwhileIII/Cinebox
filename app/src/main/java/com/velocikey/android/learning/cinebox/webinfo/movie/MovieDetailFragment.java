@@ -1,11 +1,11 @@
 package com.velocikey.android.learning.cinebox.webinfo.movie;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -119,8 +119,8 @@ public class MovieDetailFragment extends Fragment {
         //((TextView) rootView.findViewById(R.id.detail_movie_id)).setText("" + movieId);
         ((TextView) rootView.findViewById(R.id.detail_title)).setText("" + title);
         ((TextView) rootView.findViewById(R.id.detail_release_date)).setText("" + releaseDate);
-        ((TextView) rootView.findViewById(R.id.detail_popularity)).setText("" + new Float(popularity).toString());
-        ((TextView) rootView.findViewById(R.id.detail_rating)).setText("" + new Float(rating).toString());
+        ((TextView) rootView.findViewById(R.id.detail_popularity)).setText("" + popularity);
+        ((TextView) rootView.findViewById(R.id.detail_rating)).setText("" + rating);
         ((TextView) rootView.findViewById(R.id.detail_overview)).setText("" + overview);
         ImageView poster = (ImageView) rootView.findViewById(R.id.detail_poster);
 

@@ -60,7 +60,7 @@ public class WebApiTMDB extends WebApi {
     Uri builtUri;
 
     /**
-     * Obtain movie information for the pages specivied from The Movie Database (TMDB)
+     * Obtain movie information for the pages specified from The Movie Database (TMDB)
      *
      * @param orderBy     the order to be used when retrieving movie information
      * @param startPage   what is the page to start obtianing information
@@ -114,9 +114,9 @@ public class WebApiTMDB extends WebApi {
                 movieList = new JSONObject(rawJson);
 
                 movies = movieList.getJSONArray(TMDB_REPORTS);
-                pageNumber = movieList.getInt(TMDB_PAGE);
-                pages = movieList.getInt(THDB_PAGES);
-                reportCount = movieList.getInt(TMDB_RESULTS);
+                //pageNumber = movieList.getInt(TMDB_PAGE);
+                //pages = movieList.getInt(THDB_PAGES);
+                //reportCount = movieList.getInt(TMDB_RESULTS);
 
                 // Now add info for each movie
                 for (int i = 0; i < movies.length(); i++) {
@@ -127,8 +127,8 @@ public class WebApiTMDB extends WebApi {
                     String overview = rawMovieInfo.getString(TMDB_OVERVIEW);
                     String posterPath = rawMovieInfo.getString(TMDB_POSTERPATH);
                     String releaseDate = rawMovieInfo.getString(TMDB_RELEASEDATE);
-                    float popularity = new Double(rawMovieInfo.getDouble(TMDB_POPULARITY)).floatValue();
-                    float rating = new Double(rawMovieInfo.getDouble(TMDB_VOTEAVERAGE)).floatValue();
+                    float popularity = Double.valueOf(rawMovieInfo.getDouble(TMDB_POPULARITY)).floatValue();
+                    float rating = Double.valueOf(rawMovieInfo.getDouble(TMDB_VOTEAVERAGE)).floatValue();
                     results.add(new MovieInfo(id, title, releaseDate, popularity, rating, posterPath, overview));
                 }
             } catch (JSONException e) {

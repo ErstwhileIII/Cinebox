@@ -10,12 +10,12 @@
         android:id="@+id/detail_poster"
         android:layout_width="140dp"
         android:layout_height="210dp"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_gravity="start"
         android:layout_marginBottom="4dp"
-        android:layout_marginRight="4dp"
-        android:contentDescription="movie poster"
+        android:layout_marginEnd="4dp"
+        android:contentDescription="@string/movie_poster_generic_description"
         android:src="@mipmap/ic_launcher"/>
 
     <TextView
@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@id/detail_poster"
+        android:layout_toEndOf="@id/detail_poster"
         android:background="@color/primary_light"
         android:text="-->title"
         android:textColor="@color/primary_text"
@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/detail_title"
-        android:layout_toRightOf="@id/detail_poster"
+        android:layout_toEndOf="@id/detail_poster"
         android:text="-->releaseDate"
         android:textColor="@color/secondary_text"/>
 
@@ -43,8 +43,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/detail_release_date"
-        android:layout_marginRight="4dp"
-        android:layout_toRightOf="@id/detail_poster"
+        android:layout_marginEnd="4dp"
+        android:layout_toEndOf="@id/detail_poster"
         android:text="@string/detail_label_popularity"/>
 
     <TextView
@@ -52,7 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/detail_release_date"
-        android:layout_toRightOf="@id/detail_popularity_label"
+        android:layout_toEndOf="@id/detail_popularity_label"
         android:text="-->popularity"/>
 
     <TextView
@@ -60,8 +60,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/detail_popularity"
-        android:layout_marginRight="4dp"
-        android:layout_toRightOf="@id/detail_poster"
+        android:layout_marginEnd="4dp"
+        android:layout_toEndOf="@id/detail_poster"
         android:text="@string/detail_label_rating"/>
 
     <TextView
@@ -69,7 +69,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/detail_popularity"
-        android:layout_toRightOf="@id/detail_rating_label"
+        android:layout_toEndOf="@id/detail_rating_label"
         android:text="-->rating"/>
 
     <TextView

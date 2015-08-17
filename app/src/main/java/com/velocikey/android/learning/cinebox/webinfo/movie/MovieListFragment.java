@@ -1,10 +1,12 @@
 package com.velocikey.android.learning.cinebox.webinfo.movie;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.content.ContentValues;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,6 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.velocikey.android.learning.cinebox.R;
+import com.velocikey.android.learning.cinebox.webinfo.movie.data.MovieContract;
+import com.velocikey.android.learning.cinebox.webinfo.movie.data.MovieDBUtility;
+import com.velocikey.android.learning.cinebox.webinfo.movie.data.MovieProvider;
 
 import java.util.ArrayList;
 
@@ -43,7 +48,6 @@ public class MovieListFragment extends Fragment {
      * The next page to get information from using the asynchronous task
      */
     private int currentPage = 1; //
-    private int pagesToGet = 2; //
     //TODO consider making this dynamic
 
     public MovieListFragment() {
@@ -230,10 +234,14 @@ public class MovieListFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface onMovieListFragmentListener {
-        // TODO: Update argument type and name
+        /**
+         * Called when a particular movie is selected in the user interface
+         *
+         * @param movieInfo the selected movie
+         */
         void onMovieListFragmentInteraction(MovieInfo movieInfo);
-
     }
+
 
     // Asynchronous class definitions
     // Asynchronous task class definition for Movies
@@ -273,10 +281,10 @@ public class MovieListFragment extends Fragment {
                 }
             }
 
+            int pagesToGet = 1;
             ArrayList<MovieInfo> result = tmdb.getMovieInfo(sortByValue, currentPage, pagesToGet);
             currentPage = currentPage + pagesToGet;
             Log.v(LOG_TAG, "back from movie request");
-            //TODO consider putting into database here?
             return result;
         }
 
@@ -294,6 +302,18 @@ public class MovieListFragment extends Fragment {
             Log.v(LOG_TAG, "Now mMovieList size is " + mMovieInfoList.size());
             // handle putting posters into the movie adapter view
             mMovieInfoAdapter.setMovie(mMovieInfoList);
+
+            Log.v(LOG_TAG, "try inserting information into the database?!");
+            MovieProvider provider = new MovieProvider();
+            for (int i = 0; i < mMovieInfoList.size(); i++) {
+                ContentValues contentValues = MovieDBUtility.getMovieValues(mMovieInfoList.get(i));
+                Uri uri = MovieContract.MovieEntry.CONTENT_URI;
+                Log.v(LOG_TAG, "about to call insert with " + uri.toString());
+                provider.insert(uri, contentValues);
+//TODO
+
+//                provider.query(uri);
+            }
 
         }
     }

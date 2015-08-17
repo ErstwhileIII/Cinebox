@@ -12,6 +12,6 @@
         android:layout_width="100dp"
         android:layout_height="150dp"
         android:layout_gravity="center"
-        android:contentDescription="movie poster"
+        android:contentDescription="@string/movie_poster_generic_description"
         android:src="@mipmap/ic_launcher"/>
 </LinearLayout>

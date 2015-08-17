@@ -15,4 +15,10 @@
     <string name="detail_label_rating">Rating</string>
     <string name="movie_preferences">Movie preferences</string>
     <string name="pref_movie_order_title">Movie Order</string>
+    <string name="movie_poster_generic_description">movie poster</string>
+
+    <!-- Authentication, SyncAdapter related -->
+    <string name="sync_account_type">cinebox.velocikey.com</string>
+    <string name="content_authority">com.velocikey.android.learning.cinebox.app</string>
+
 </resources>

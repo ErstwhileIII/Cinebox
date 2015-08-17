@@ -62,7 +62,7 @@ public class MovieInfo {
      *
      * @param size use -1 for "original", other valid values are 45, 92, 154,185,300 and 500.
      *             If an invalid value is specified, a 185 pixel widht size will be used.
-     * @return
+     * @return the full URI to the poster path of the appropriate size
      */
     public String getFullPosterPath(int size) {
         String sizeName;
@@ -91,6 +91,7 @@ public class MovieInfo {
         }
         return "https://image.tmdb.org/t/p/" + sizeName + posterPath;
     }
+
 
     //TODO add equals and hashcode overrides
 

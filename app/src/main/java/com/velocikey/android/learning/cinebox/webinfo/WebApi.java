@@ -14,7 +14,7 @@ import java.net.URL;
 import javax.net.ssl.HttpsURLConnection;
 
 /**
- * Created by Joseph White on 2015 Jul 13.
+ * Created by Joseph White on 16-Aug-2015
  */
 public class WebApi {
     // Class fields
@@ -27,7 +27,7 @@ public class WebApi {
      * @param method (one of GET, PUT, POST, DELETE)
      * @return string containing the full JSON response
      */
-    public String getJson(URL url, String method) {
+    protected String getJson(URL url, String method) {
         //TODO ensure Method is legitimate (GET, PUT, POST, DELETE)
         String results = "";
         BufferedReader reader = null;
@@ -43,7 +43,7 @@ public class WebApi {
             Log.v(LOG_TAG, "Response code is " + responseCode);
 
             InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
 
             if (inputStream != null) {
                 reader = new BufferedReader(new InputStreamReader(inputStream));

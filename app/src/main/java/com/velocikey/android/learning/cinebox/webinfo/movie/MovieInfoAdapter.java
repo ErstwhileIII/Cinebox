@@ -43,8 +43,7 @@ public class MovieInfoAdapter
         View itemView = LayoutInflater
                             .from(viewGroup.getContext())
                             .inflate(R.layout.movie_list_poster, viewGroup, false);
-        MovieInfoViewHolder mMovieInfoViewHolder = new MovieInfoViewHolder(itemView);
-        return mMovieInfoViewHolder;
+        return new MovieInfoViewHolder(itemView);
     }
 
     @Override
@@ -107,10 +106,10 @@ public class MovieInfoAdapter
 
     // Inner ViewHolder class
     class MovieInfoViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        // Object fields
+        public final ImageView poster;
         // Class fields
         private final String LOG_TAG = MovieInfoViewHolder.class.getSimpleName();
-        // Object fields
-        public ImageView poster;
 
         public MovieInfoViewHolder(View itemView) {
             super(itemView);
