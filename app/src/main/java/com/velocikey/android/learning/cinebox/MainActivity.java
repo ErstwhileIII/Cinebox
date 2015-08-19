@@ -13,11 +13,13 @@ import com.velocikey.android.learning.cinebox.webinfo.movie.MovieDetailFragment;
 import com.velocikey.android.learning.cinebox.webinfo.movie.MovieInfo;
 import com.velocikey.android.learning.cinebox.webinfo.movie.MovieListFragment;
 
+
 public class MainActivity extends Activity
         implements MovieListFragment.onMovieListFragmentListener
                  , MovieDetailFragment.OnMovieDetailFragmentListener{
     // Class fields
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+
 
     // Object fields
     private FragmentManager fragmentManager;
@@ -44,7 +46,10 @@ public class MainActivity extends Activity
                 .add(R.id.main_frame, movieListFragment)
                 .commit();
         Log.v(LOG_TAG, "onCreate: movie list fragment attached");
+
+
     }
+
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {

@@ -67,7 +67,9 @@ public class MovieProvider extends ContentProvider {
      */
     @Override
     public boolean onCreate() {
+        Log.v(LOG_TAG, "onCreate:");
         mMovieDBHelper = new MovieDBHelper(getContext());
+        Log.v(LOG_TAG, "onCreate, new mMovieDBHelper is null? " + (mMovieDBHelper == null));
         return true;
     }
 
@@ -159,6 +161,7 @@ public class MovieProvider extends ContentProvider {
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
+        Log.v(LOG_TAG, "getType:");
 
         switch (sUriMatcher.match(uri)) {
             case MOVIE_LIST:
@@ -186,16 +189,16 @@ public class MovieProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues values) {
-        Log.v(LOG_TAG, "insert: ");
         SQLiteDatabase db;
         long rowId;
 
+        Log.v(LOG_TAG, "insert: ");
+        db = mMovieDBHelper.getWritableDatabase();
         int match = sUriMatcher.match(uri);
         Log.v(LOG_TAG, "match is " + match);
 
-        switch (match + 1000) {
+        switch (match) {
             case MOVIE_LIST:
-                db = mMovieDBHelper.getWritableDatabase();
                 rowId = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, values);
                 Log.v(LOG_TAG, "insert: rowid is " + rowId
                         + ", Movie ID is " + values.getAsString(MovieContract.MovieEntry._ID));
@@ -216,8 +219,8 @@ public class MovieProvider extends ContentProvider {
     }
 
     @Override
-    public int bulkInsert(Uri uri, ContentValues[] values) {
-        Log.d(LOG_TAG, "bulkInsert");
+    public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
+        Log.d(LOG_TAG, "bulkInsert, mMovieDBHelper is null? " + (mMovieDBHelper == null));
         final SQLiteDatabase db = mMovieDBHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
 
@@ -228,6 +231,7 @@ public class MovieProvider extends ContentProvider {
                 try {
                     for (ContentValues value : values) {
                         long id = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, value);
+                        Log.v(LOG_TAG, "id = " + id);
                         if (id != -1) {
                             returnCount++;
                         }
@@ -269,9 +273,15 @@ public class MovieProvider extends ContentProvider {
      */
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
-        //TODO expand to handle deletion when needed
-        return 0;
+        final SQLiteDatabase db = mMovieDBHelper.getWritableDatabase();
+
+        //TODO use UriMatcheer
+
+        Log.v(LOG_TAG, "deleteAll");
+        int deletedRows = db.delete(MovieContract.MovieEntry.TABLE_NAME, selection, selectionArgs);
+        return deletedRows;
     }
+
 
     /**
      * Implement this to handle requests to update one or more rows.

@@ -15,13 +15,15 @@ public class MovieDBHelper extends SQLiteOpenHelper {
     // Class fields
     private static final String LOG_TAG = MovieDBHelper.class.getSimpleName();
     // Database information
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     // Object Fields
+    //TODO needed?
+    private final Context mContext;
 
     public MovieDBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         Log.v(LOG_TAG, "constructor");
-
+        mContext = context;
     }
 
     /**
@@ -32,13 +34,6 @@ public class MovieDBHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-//        private final int movieId;
-//        private final String title;
-//        private final String releaseDate;
-//        private final float popularity;
-//        private final float rating;
-//        private final String posterPath;
-//        private final String overview;
         //TODO use utility method to create the table statement
         final String CreateMovieinfoTable =
                 "CREATE TABLE " + MovieContract.MovieEntry.TABLE_NAME + " (" +
@@ -81,5 +76,6 @@ public class MovieDBHelper extends SQLiteOpenHelper {
         //TODO currently just drop and recreate the database on version change
         Log.v(LOG_TAG, "onUpgrade from " + oldVersion + " to " + newVersion);
         db.execSQL("DROP TABLE IF EXISTS " + MovieContract.MovieEntry.TABLE_NAME);
+        onCreate(db);
     }
 }

@@ -12,6 +12,7 @@ import android.provider.BaseColumns;
  */
 public class MovieContract {
     // Information needed for corresponding Provider
+    //TODO how to put authority into string reference a\
     public static final String CONTENT_AUTHORITY = "com.velocikey.android.learning.cinebox.app";
     public static final String PATH_MOVIE = "movie";
     // Class fields

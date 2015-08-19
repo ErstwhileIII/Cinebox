@@ -115,7 +115,6 @@ public class MovieInfoAdapter
             super(itemView);
             Log.v(LOG_TAG, "id: " + itemView.getId());
 
-
             poster = (ImageView) itemView.findViewById(R.id.movie_list_poster);
             poster.setOnClickListener(this);
 

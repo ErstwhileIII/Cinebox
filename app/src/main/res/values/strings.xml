@@ -20,5 +20,7 @@
     <!-- Authentication, SyncAdapter related -->
     <string name="sync_account_type">cinebox.velocikey.com</string>
     <string name="content_authority">com.velocikey.android.learning.cinebox.app</string>
+    <!-- Provider authority related -->
+    <string name="zAuthorityMovieInfo">com.velocikey.android.learning.cinebox.app</string>
 
 </resources>

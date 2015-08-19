@@ -2,9 +2,9 @@ package com.velocikey.android.learning.cinebox.webinfo.movie;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -33,22 +33,23 @@ public class MovieListFragment extends Fragment {
     // Class fields
     private static final String LOG_TAG = MovieListFragment.class.getSimpleName();
     private static final int MOVIE_DISPLAY_ROWS = 3;
-    private static final int MOVIE_QUERY_COUNT = 20;
 
     // Object fields
+    private static final int totalPages = 4; // total number of pages to request
     /**
      * Listener in activity that attached this fragment
      */
     private onMovieListFragmentListener mListener;
+    private MovieProvider mMovieProvider = new MovieProvider();
     private ArrayList<MovieInfo> mMovieInfoList;
     private MovieInfoAdapter mMovieInfoAdapter;
+    private MovieInfoAdapterCursor mMovieInfoAdapterCursor;
     private RecyclerView mRecyclerView;
     private GridLayoutManager mLayoutManager;
     /**
      * The next page to get information from using the asynchronous task
      */
-    private int currentPage = 1; //
-    //TODO consider making this dynamic
+    private int currentPage = 1;
 
     public MovieListFragment() {
         Log.v(LOG_TAG, "Constructor");
@@ -90,27 +91,33 @@ public class MovieListFragment extends Fragment {
         if (savedInstanceState == null) {
             //TODO Handle restoration
         }
-
-        //TODO handle settings (popularity or rating)
-
-        //mMovieInfoList = DebugMovieInfo.getMovieInfoList();
         mMovieInfoList = new ArrayList<>();
-        // initiate movie information task
-//        String defaultOrder = "Popularity";
-//
-//        FetchMovieInfoTask movieInfoTask = new FetchMovieInfoTask();
-//        movieInfoTask.execute(defaultOrder);
         getMovies();
     }
 
     private void getMovies() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String movieOrder = preferences.getString(getString(R.string.pref_movie_order_key),
-                getString(R.string.pref_movie_order_defaultvalue));
-        Log.v(LOG_TAG, "Requested movie order is: " + movieOrder);
-        FetchMovieInfoTask movieInfoTask = new FetchMovieInfoTask();
-        //TODO adjust to pass page to return
-        movieInfoTask.execute(movieOrder);
+        long lastQuery = preferences.getLong("lastQueried", 0);
+        Log.v(LOG_TAG, "lastquery time was " + lastQuery);
+        // TODO remove force reset
+        lastQuery = Math.min(lastQuery, 1);
+        if (lastQuery < (System.currentTimeMillis() - 24 * 60 * 60 * 1000)) {
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putLong("lastQueried", System.currentTimeMillis());
+            editor.commit();
+            if (lastQuery > 0) {
+                Log.v(LOG_TAG, "getMovies: delete all rows");
+                int deletedRows = this.getActivity().getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI, "1", null);
+                Log.v(LOG_TAG, "Rows deleted count = " + deletedRows);
+            }
+            String movieOrder = preferences.getString(getString(R.string.pref_movie_order_key),
+                    getString(R.string.pref_movie_order_defaultvalue));
+            Log.v(LOG_TAG, "Requested movie order is: " + movieOrder);
+            FetchMovieInfoTask movieInfoTask = new FetchMovieInfoTask();
+            //TODO adjust to pass page to return
+            movieInfoTask.execute(movieOrder);
+        }
+
     }
 
     /**
@@ -281,7 +288,7 @@ public class MovieListFragment extends Fragment {
                 }
             }
 
-            int pagesToGet = 1;
+            int pagesToGet = 3;
             ArrayList<MovieInfo> result = tmdb.getMovieInfo(sortByValue, currentPage, pagesToGet);
             currentPage = currentPage + pagesToGet;
             Log.v(LOG_TAG, "back from movie request");
@@ -303,17 +310,19 @@ public class MovieListFragment extends Fragment {
             // handle putting posters into the movie adapter view
             mMovieInfoAdapter.setMovie(mMovieInfoList);
 
-            Log.v(LOG_TAG, "try inserting information into the database?!");
-            MovieProvider provider = new MovieProvider();
-            for (int i = 0; i < mMovieInfoList.size(); i++) {
-                ContentValues contentValues = MovieDBUtility.getMovieValues(mMovieInfoList.get(i));
-                Uri uri = MovieContract.MovieEntry.CONTENT_URI;
-                Log.v(LOG_TAG, "about to call insert with " + uri.toString());
-                provider.insert(uri, contentValues);
-//TODO
-
-//                provider.query(uri);
+            // put information into a database using the MovieProvider
+            ContentValues[] movieContentValues = new ContentValues[result.size()];
+            for (int i = 0; i < result.size(); i++) {
+                movieContentValues[i] = MovieDBUtility.getMovieValues(result.get(i));
             }
+            Log.v(LOG_TAG, "onPostExecute: about to try to get ContentResolver");
+
+            ContentResolver resolver = getActivity().getContentResolver();
+            Log.v(LOG_TAG, "resolver obtained, now try to insert content values");
+
+
+            resolver.bulkInsert(MovieContract.MovieEntry.CONTENT_URI, movieContentValues);
+            // mMovieProvider.bulkInsert(MovieContract.MovieEntry.CONTENT_URI, movieContentValues);
 
         }
     }
