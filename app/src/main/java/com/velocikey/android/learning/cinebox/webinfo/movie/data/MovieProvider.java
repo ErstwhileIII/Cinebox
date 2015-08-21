@@ -31,7 +31,6 @@ public class MovieProvider extends ContentProvider {
      * Handle movie and movie?movid_id=<value> as URIs
      */
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-
     static {
         sUriMatcher.addURI(MovieContract.CONTENT_AUTHORITY, MovieContract.PATH_MOVIE, MOVIE_LIST);
         sUriMatcher.addURI(MovieContract.CONTENT_AUTHORITY, MovieContract.PATH_MOVIE + "/#", MOVIE_ID);
@@ -39,6 +38,7 @@ public class MovieProvider extends ContentProvider {
 
     private MovieDBHelper mMovieDBHelper;
     //TODO others?
+
 
     /**
      * Implement this to initialize your content provider on startup.
@@ -132,7 +132,6 @@ public class MovieProvider extends ContentProvider {
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         SQLiteDatabase db = mMovieDBHelper.getReadableDatabase();
-
         SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
 
         switch (sUriMatcher.match(uri)) {
@@ -231,7 +230,6 @@ public class MovieProvider extends ContentProvider {
                 try {
                     for (ContentValues value : values) {
                         long id = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, value);
-                        Log.v(LOG_TAG, "id = " + id);
                         if (id != -1) {
                             returnCount++;
                         }
@@ -273,19 +271,31 @@ public class MovieProvider extends ContentProvider {
      */
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
+        int deletedRows;
+        Log.v(LOG_TAG, "delete (where clause = " + selection);
+
         final SQLiteDatabase db = mMovieDBHelper.getWritableDatabase();
 
-        //TODO use UriMatcheer
-
-        Log.v(LOG_TAG, "deleteAll");
-        int deletedRows = db.delete(MovieContract.MovieEntry.TABLE_NAME, selection, selectionArgs);
+        switch (sUriMatcher.match(uri)) {
+            case MOVIE_LIST:
+                deletedRows = db.delete(MovieContract.MovieEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            case MOVIE_ID:
+                //TODO consider merging seleciton of _id with other where clause elements
+                deletedRows = db.delete(MovieContract.MovieEntry.TABLE_NAME,
+                        MovieContract.MovieEntry._ID + " = " + uri.getLastPathSegment(), null);
+                break;
+            default:
+                Log.e(LOG_TAG, "query: unsupported URI " + uri);
+                deletedRows = 0;
+        }
         return deletedRows;
     }
 
 
     /**
      * Implement this to handle requests to update one or more rows.
-     * The implementation should update all rows matching the selection
+     * The implementation should update all rows matching the whereClause
      * to set the columns according to the provided values map.
      * As a courtesy, call {@link ContentResolver#notifyChange(Uri, ContentObserver) notifyChange()}
      * after updating.
@@ -297,14 +307,31 @@ public class MovieProvider extends ContentProvider {
      *                      is an update request for a specific record.
      * @param values        A set of column_name/value pairs to update in the database.
      *                      This must not be {@code null}.
-     * @param selection     An optional filter to match rows to update.
-     * @param selectionArgs for the corresponding selection items
+     * @param whereClause     An optional filter to match rows to update.
+     * @param whereArgs for the corresponding whereClause items
      * @return the number of rows affected.
      */
     @Override
-    public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        //TODO dexpand to handle movieinformation update when needed
-        return 0;
+    public int update(@NonNull Uri uri, ContentValues values, String whereClause, String[] whereArgs) {
+        int rowsAffected;
+        SQLiteDatabase db = mMovieDBHelper.getWritableDatabase();
+
+        switch (sUriMatcher.match(uri)) {
+            case MOVIE_LIST:
+                rowsAffected = db.update(MovieContract.MovieEntry.TABLE_NAME,
+                        values, whereClause, whereArgs);
+                break;
+            case MOVIE_ID:
+                //TODO consider merging seleciton of _id with other where clause elements
+                rowsAffected = db.update(MovieContract.MovieEntry.TABLE_NAME,
+                        values, MovieContract.MovieEntry._ID + " = " + uri.getLastPathSegment(), null);
+                break;
+            default:
+                Log.e(LOG_TAG, "query: unsupported URI " + uri);
+                rowsAffected = 0;
+        }
+
+        return rowsAffected;
     }
 
 

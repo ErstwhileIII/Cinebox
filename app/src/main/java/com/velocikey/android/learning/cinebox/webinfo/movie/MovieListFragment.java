@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -57,42 +58,65 @@ public class MovieListFragment extends Fragment {
     }
 
     /**
-     * (Lifecycle order #1)
+     * (Lifecycle order #1) onAttack
      * Save the calling activity for use as a click listener when an item is selected in the
      * list of movies. Make sure that the appropriate interface is implemented in the calling
      * activity (throwing an exception if not).
      *
-     * @param activity containing activity
-     *
+     * @param context containing context for the attaching activity
      * @throws ClassCastException if the {@link onMovieListFragmentListener} interface is not
-     * implemented by the calling activity
+     *                            implemented by the calling activity
      */
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Log.v(LOG_TAG, "onAttach: Context argument");
+        myOnAttachWork(context);
+    }
+
+    /**
+     * Provide deprecated form for use with lower that API level 23
+     * @param activity
+     */
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        Log.v(LOG_TAG, "onAttach:");
+        Log.v(LOG_TAG, "onAttach: Activity argument");
+
+        myOnAttachWork(activity);
+    }
+
+    private void myOnAttachWork(Context context) {
+        Log.v(LOG_TAG, "... working");
         try {
-            mListener = (onMovieListFragmentListener) activity;
+            mListener = (onMovieListFragmentListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
+            throw new ClassCastException(context.getClass().getName()
                     + " must implement OnMovieListFragmentListener");
         }
     }
 
     /**
-     * (Lifecycle order #2)
+     * (Lifecycle order #2) onCreate
      *
      * @param savedInstanceState the previous state of the fragment, if it was saved
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.v(LOG_TAG, "onCreate: (savedInstanceState is null? " + (savedInstanceState == null));
-        if (savedInstanceState == null) {
-            //TODO Handle restoration
-        }
         mMovieInfoList = new ArrayList<>();
-        getMovies();
+        Log.v(LOG_TAG, "onCreate: ");
+
+        if (savedInstanceState != null) {
+            //TODO Handle restoration
+            Log.v(LOG_TAG, "restoring savedInstanceState");
+            if (mMovieInfoList != null && mMovieInfoList.size() == 0) {
+                Log.v(LOG_TAG, "still handling async task ?!!");
+                getMovies();
+            }
+        } else {
+            getMovies();
+        }
+
     }
 
     private void getMovies() {
@@ -121,7 +145,7 @@ public class MovieListFragment extends Fragment {
     }
 
     /**
-     * (Lifecycle #3)
+     * (Lifecycle #3) onCreateView
      *
      * @param inflater           to be used to inflate views
      * @param parent             the container for this fragment
@@ -145,7 +169,7 @@ public class MovieListFragment extends Fragment {
     }
 
     /**
-     * (Lifecycle #4)
+     * (Lifecycle #4) on ActivityCreated
      *
      * @param savedInstanceState The previous state of the fragment, if saved
      */
@@ -182,6 +206,12 @@ public class MovieListFragment extends Fragment {
     public void onResume() {
         super.onResume();
         Log.v(LOG_TAG, "onResume: ");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        Log.v(LOG_TAG, "onSaveInstanceState: ");
+        //TODO save what will be needed to restore on configuration change
     }
 
     /**
@@ -288,6 +318,8 @@ public class MovieListFragment extends Fragment {
                 }
             }
 
+            // TODO handle new pages requests here in fragment?
+            // TODO handle database insertion in "genMovieInfo"
             int pagesToGet = 3;
             ArrayList<MovieInfo> result = tmdb.getMovieInfo(sortByValue, currentPage, pagesToGet);
             currentPage = currentPage + pagesToGet;

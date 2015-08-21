@@ -35,6 +35,7 @@ public class MainActivity extends Activity
         Log.v(LOG_TAG, "onCreate: establish content for main view (" + R.layout.activity_main);
         if (savedInstanceState != null) {
             Log.v(LOG_TAG, "savedInstanceState info present");
+            Log.v(LOG_TAG, savedInstanceState.toString());
 
         }
         setContentView(R.layout.activity_main);
@@ -45,11 +46,13 @@ public class MainActivity extends Activity
         fragmentManager.beginTransaction()
                 .add(R.id.main_frame, movieListFragment)
                 .commit();
-        Log.v(LOG_TAG, "onCreate: movie list fragment attached");
-
-
     }
 
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.v(LOG_TAG, "onRestoreInstanceState");
+        //TOOD hande restore
+    }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {

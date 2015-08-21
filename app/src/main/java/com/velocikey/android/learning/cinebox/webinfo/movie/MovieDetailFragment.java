@@ -87,7 +87,6 @@ public class MovieDetailFragment extends Fragment {
         mContext = getActivity();
         Log.v(LOG_TAG, "onCreate: ");
         if (getActivity() != null) {
-            Log.v(LOG_TAG, "onCreate: found arguments");
             movieId = getArguments().getInt(ARG_movieId);
             title = getArguments().getString(ARG_title);
             releaseDate = getArguments().getString(ARG_releaseDate);
@@ -125,9 +124,7 @@ public class MovieDetailFragment extends Fragment {
         ImageView poster = (ImageView) rootView.findViewById(R.id.detail_poster);
 
         if (posterPath != null) {
-            Log.v(LOG_TAG, "About to load poster from " + posterPath);
             Uri uri = Uri.parse(posterPath);
-
             Picasso.with(mContext).load(uri).into(poster);
         }
 

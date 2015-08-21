@@ -39,7 +39,6 @@ public class MovieInfoAdapter
 
     @Override
     public MovieInfoViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        Log.v(LOG_TAG, "onCreateViewHolder: viewType is " + viewType);
         View itemView = LayoutInflater
                             .from(viewGroup.getContext())
                             .inflate(R.layout.movie_list_poster, viewGroup, false);
@@ -48,9 +47,9 @@ public class MovieInfoAdapter
 
     @Override
     public void onBindViewHolder(MovieInfoViewHolder holder, int position) {
-        Log.v(LOG_TAG,"onBindViewHolder: position is " + position);
+//        Log.v(LOG_TAG,"onBindViewHolder: position is " + position);
         String posterPath = mMovieInformation.get(position).getFullPosterPath(185);
-        Log.v(LOG_TAG,"loading image from: " + posterPath);
+//        Log.v(LOG_TAG,"loading image from: " + posterPath);
         Uri uri = Uri.parse(posterPath);
         //TODO add error and placeholder drawings
         Picasso.with(mContext).load(uri).into(holder.poster);
@@ -92,7 +91,6 @@ public class MovieInfoAdapter
     public void setMovie(ArrayList<MovieInfo> movieInformation) {
         Log.v(LOG_TAG, "setMovie");
         if (mMovieInformation == null || mMovieInformation.size() == 0) {
-            Log.v(LOG_TAG, "setMovie: mMovieInformation null? " + (mMovieInformation == null));
             mMovieInformation = movieInformation;
             this.notifyDataSetChanged();
         } else {
@@ -113,16 +111,12 @@ public class MovieInfoAdapter
 
         public MovieInfoViewHolder(View itemView) {
             super(itemView);
-            Log.v(LOG_TAG, "id: " + itemView.getId());
-
             poster = (ImageView) itemView.findViewById(R.id.movie_list_poster);
             poster.setOnClickListener(this);
-
         }
         public void onClick(View v) {
             int position = getAdapterPosition();
             MovieInfo movieInfo = mMovieInformation.get(position);
-            Log.v(LOG_TAG, "onClick: returning movie information from position: " + position);
             mMovieListListener.onMovieListFragmentInteraction(movieInfo);
         }
     }

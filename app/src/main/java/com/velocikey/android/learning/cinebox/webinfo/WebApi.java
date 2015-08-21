@@ -32,15 +32,13 @@ public class WebApi {
         String results = "";
         BufferedReader reader = null;
         HttpURLConnection urlConnection = null;
-        Log.v(LOG_TAG, "URL: "+url.toString());
 
         try {
             urlConnection = (HttpsURLConnection) url.openConnection();
             urlConnection.setRequestMethod(method);
             urlConnection.connect();
-            Log.v(LOG_TAG, "About to perform movie info update");
             int responseCode = urlConnection.getResponseCode();
-            Log.v(LOG_TAG, "Response code is " + responseCode);
+            //TODO handle unexpected response codes
 
             InputStream inputStream = urlConnection.getInputStream();
             StringBuilder buffer = new StringBuilder();
