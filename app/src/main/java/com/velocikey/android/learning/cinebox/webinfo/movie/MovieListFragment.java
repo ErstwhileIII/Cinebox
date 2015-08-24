@@ -2,19 +2,28 @@ package com.velocikey.android.learning.cinebox.webinfo.movie;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.LoaderManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.CursorLoader;
+import android.content.Loader;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.BaseColumns;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CursorAdapter;
 
 import com.velocikey.android.learning.cinebox.R;
 import com.velocikey.android.learning.cinebox.webinfo.movie.data.MovieContract;
@@ -30,21 +39,24 @@ import java.util.ArrayList;
  * {@link onMovieListFragmentListener} interface
  * to handle interaction events.
  */
-public class MovieListFragment extends Fragment {
+public class MovieListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     // Class fields
     private static final String LOG_TAG = MovieListFragment.class.getSimpleName();
     private static final int MOVIE_DISPLAY_ROWS = 3;
+    private static final long MOVIE_QUERY_STALE = 24 * 60 * 60 * 1000;
 
     // Object fields
     private static final int totalPages = 4; // total number of pages to request
     /**
      * Listener in activity that attached this fragment
      */
+    private MovieListFragment me;
     private onMovieListFragmentListener mListener;
     private MovieProvider mMovieProvider = new MovieProvider();
     private ArrayList<MovieInfo> mMovieInfoList;
-    private MovieInfoAdapter mMovieInfoAdapter;
+    //    private MovieInfoAdapter mMovieInfoAdapter;
     private MovieInfoAdapterCursor mMovieInfoAdapterCursor;
+    private Cursor mMovieInfoCursor;
     private RecyclerView mRecyclerView;
     private GridLayoutManager mLayoutManager;
     /**
@@ -53,8 +65,21 @@ public class MovieListFragment extends Fragment {
     private int currentPage = 1;
 
     public MovieListFragment() {
-        Log.v(LOG_TAG, "Constructor");
-        // Required empty public constructor
+        Log.v(LOG_TAG, "-->Constructor");
+        me = this;
+    }
+
+    @Override
+    public void onInflate(Context context, AttributeSet attributeSet, Bundle savedInstanceState) {
+        super.onInflate(context, attributeSet, savedInstanceState);
+        Log.v(LOG_TAG, "-->onInflate(Context)");
+    }
+
+    //TODO remove since depracated nandle using context instead . but check linke onAttach
+    @Override
+    public void onInflate(Activity activity, AttributeSet attributeSet, Bundle savedInstanceState) {
+        super.onInflate(activity, attributeSet, savedInstanceState);
+        Log.v(LOG_TAG, "-->onInflate(Activity)");
     }
 
     /**
@@ -70,8 +95,8 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        Log.v(LOG_TAG, "onAttach: Context argument");
-        myOnAttachWork(context);
+        Log.v(LOG_TAG, "-->onAttach: Context argument");
+        handleOnAttach(context);
     }
 
     /**
@@ -80,19 +105,8 @@ public class MovieListFragment extends Fragment {
      */
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        Log.v(LOG_TAG, "onAttach: Activity argument");
-
-        myOnAttachWork(activity);
-    }
-
-    private void myOnAttachWork(Context context) {
-        Log.v(LOG_TAG, "... working");
-        try {
-            mListener = (onMovieListFragmentListener) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.getClass().getName()
-                    + " must implement OnMovieListFragmentListener");
-        }
+        Log.v(LOG_TAG, "-->onAttach: Activity argument");
+        handleOnAttach(activity);
     }
 
     /**
@@ -103,8 +117,8 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mMovieInfoList = new ArrayList<>();
-        Log.v(LOG_TAG, "onCreate: ");
+        //mMovieInfoList = new ArrayList<>();
+        Log.v(LOG_TAG, "-->onCreate: ");
 
         if (savedInstanceState != null) {
             //TODO Handle restoration
@@ -122,26 +136,29 @@ public class MovieListFragment extends Fragment {
     private void getMovies() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         long lastQuery = preferences.getLong("lastQueried", 0);
+
         Log.v(LOG_TAG, "lastquery time was " + lastQuery);
-        // TODO remove force reset
-        lastQuery = Math.min(lastQuery, 1);
-        if (lastQuery < (System.currentTimeMillis() - 24 * 60 * 60 * 1000)) {
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putLong("lastQueried", System.currentTimeMillis());
-            editor.commit();
+        long now = System.currentTimeMillis();
+        Log.v(LOG_TAG, "now = " + now + ", stale cutoff = " + (now - MOVIE_QUERY_STALE));
+        boolean isStale = lastQuery < (now - MOVIE_QUERY_STALE);
+        Log.v(LOG_TAG, "movie data stale? " + isStale);
+
+        if (isStale) {
+
             if (lastQuery > 0) {
                 Log.v(LOG_TAG, "getMovies: delete all rows");
                 int deletedRows = this.getActivity().getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI, "1", null);
                 Log.v(LOG_TAG, "Rows deleted count = " + deletedRows);
             }
-            String movieOrder = preferences.getString(getString(R.string.pref_movie_order_key),
-                    getString(R.string.pref_movie_order_defaultvalue));
+            String movieOrder = preferences.getString(getString(R.string.pref_movie_order_key), getString(R.string.pref_movie_order_defaultvalue));
             Log.v(LOG_TAG, "Requested movie order is: " + movieOrder);
             FetchMovieInfoTask movieInfoTask = new FetchMovieInfoTask();
             //TODO adjust to pass page to return
             movieInfoTask.execute(movieOrder);
+        } else {
+            Log.v(LOG_TAG, "About to get a loader manager");
+            getLoaderManager().initLoader(0, null, me);
         }
-
     }
 
     /**
@@ -156,13 +173,17 @@ public class MovieListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup parent,
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, parent, savedInstanceState);
-        Log.v(LOG_TAG, "onCreateView: (savedInstanceState null? " + (savedInstanceState == null) + ")");
+        Log.v(LOG_TAG, "-->onCreateView: (savedInstanceState null? " + (savedInstanceState == null) + ")");
         //TODO handle savedInstanceState
+        if (savedInstanceState != null) {
+            //TODO handle here
+        }
 
         RecyclerView rv = (RecyclerView) inflater.inflate(R.layout.fragment_movie_list, parent, false);
         rv.setLayoutManager(new GridLayoutManager(rv.getContext(), MOVIE_DISPLAY_ROWS, GridLayoutManager.HORIZONTAL, false));
-        mMovieInfoAdapter = new MovieInfoAdapter(getActivity(), mMovieInfoList, mListener);
-        rv.setAdapter(mMovieInfoAdapter);
+
+        mMovieInfoAdapterCursor = new MovieInfoAdapterCursor(getActivity(), mMovieInfoCursor, mListener);
+        rv.setAdapter(mMovieInfoAdapterCursor);
         rv.setHasFixedSize(true);
 
         return rv;
@@ -176,7 +197,7 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.v(LOG_TAG, "onActivityCreated: ");
+        Log.v(LOG_TAG, "-->onActivityCreated: ");
     }
 
     /**
@@ -187,7 +208,7 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onViewStateRestored(Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        Log.v(LOG_TAG, "onViewStateRestored: ");
+        Log.v(LOG_TAG, "-->onViewStateRestored: ");
     }
 
     /**
@@ -196,7 +217,7 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        Log.v(LOG_TAG, "onStart: ");
+        Log.v(LOG_TAG, "-->onStart: ");
     }
 
     /**
@@ -205,12 +226,12 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        Log.v(LOG_TAG, "onResume: ");
+        Log.v(LOG_TAG, "-->onResume: ");
     }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        Log.v(LOG_TAG, "onSaveInstanceState: ");
+        Log.v(LOG_TAG, "-->onSaveInstanceState: ");
         //TODO save what will be needed to restore on configuration change
     }
 
@@ -220,7 +241,7 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        Log.v(LOG_TAG, "onPause: ");
+        Log.v(LOG_TAG, "-->onPause: ");
     }
 
     /**
@@ -229,7 +250,7 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        Log.v(LOG_TAG, "onStop: ");
+        Log.v(LOG_TAG, "-->onStop: ");
     }
 
     /**
@@ -238,7 +259,7 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        Log.v(LOG_TAG, "onDestroyView: ");
+        Log.v(LOG_TAG, "-->onDestroyView: ");
     }
 
     /**
@@ -247,7 +268,7 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.v(LOG_TAG, "onDestroy: ");
+        Log.v(LOG_TAG, "-->onDestroy: ");
     }
 
     /**
@@ -256,8 +277,114 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        Log.v(LOG_TAG, "onDetach: ");
+        Log.v(LOG_TAG, "-->onDetach: ");
         mListener = null;
+    }
+
+    private void handleOnAttach(Context context) {
+        Log.v(LOG_TAG, "... working");
+        if (mMovieInfoList == null) {
+            try {
+                mListener = (onMovieListFragmentListener) context;
+            } catch (ClassCastException e) {
+                throw new ClassCastException(context.getClass().getName()
+                        + " must implement OnMovieListFragmentListener");
+            }
+        }
+    }
+
+    private void handleOnInflate(Context context, AttributeSet attributeSet, Bundle savedInstanceState) {
+        Log.v(LOG_TAG, " handlikng OnFlate");
+    }
+
+
+    //---------------- LoaderManager stuff
+
+    /**
+     * Instantiate and return a new Loader for the given ID.
+     *
+     * @param id   The ID whose loader is to be created.
+     * @param args Any arguments supplied by the caller.
+     * @return Return a new Loader instance that is ready to start loading.
+     */
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        //TODO extend to more than one loader, so ignore id for now
+        final String[] projection = {
+                BaseColumns._ID,
+                MovieContract.MovieEntry.COL_title,
+                MovieContract.MovieEntry.COL_releaseDate,
+                MovieContract.MovieEntry.COL_popularity,
+                MovieContract.MovieEntry.COL_rating,
+                MovieContract.MovieEntry.COL_posterPath,
+                MovieContract.MovieEntry.COL_overview};
+
+        Uri baseUri = MovieContract.MovieEntry.CONTENT_URI;
+        //TODO get sort order from preferences
+        return new CursorLoader(getActivity(),
+                baseUri,
+                projection,
+                null,
+                null,
+                MovieContract.MovieEntry.COL_popularity + " DESC");
+    }
+
+    /**
+     * Called when a previously created loader has finished its load.  Note
+     * that normally an application is <em>not</em> allowed to commit fragment
+     * transactions while in this call, since it can happen after an
+     * activity's state is saved.  See {@link FragmentManager#beginTransaction()
+     * FragmentManager.openTransaction()} for further discussion on this.
+     * <p>
+     * <p>This function is guaranteed to be called prior to the release of
+     * the last data that was supplied for this Loader.  At this point
+     * you should remove all use of the old data (since it will be released
+     * soon), but should not do your own release of the data since its Loader
+     * owns it and will take care of that.  The Loader will take care of
+     * management of its data so you don't have to.  In particular:
+     * <p>
+     * <ul>
+     * <li> <p>The Loader will monitor for changes to the data, and report
+     * them to you through new calls here.  You should not monitor the
+     * data yourself.  For example, if the data is a {@link Cursor}
+     * and you place it in a {@link CursorAdapter}, use
+     * the {@link CursorAdapter#CursorAdapter(Context,
+     * Cursor, int)} constructor <em>without</em> passing
+     * in either {@link CursorAdapter#FLAG_AUTO_REQUERY}
+     * or {@link CursorAdapter#FLAG_REGISTER_CONTENT_OBSERVER}
+     * (that is, use 0 for the flags argument).  This prevents the CursorAdapter
+     * from doing its own observing of the Cursor, which is not needed since
+     * when a change happens you will get a new Cursor throw another call
+     * here.
+     * <li> The Loader will release the data once it knows the application
+     * is no longer using it.  For example, if the data is
+     * a {@link Cursor} from a {@link CursorLoader},
+     * you should not call close() on it yourself.  If the Cursor is being placed in a
+     * {@link CursorAdapter}, you should use the
+     * {@link CursorAdapter#swapCursor(Cursor)}
+     * method so that the old Cursor is not closed.
+     * </ul>
+     *
+     * @param loader The Loader that has finished.
+     * @param data   The data generated by the Loader.
+     */
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.v(LOG_TAG, "-->onLoadFinished: ");
+        mMovieInfoAdapterCursor.swapCursor(data);
+    }
+
+    /**
+     * Called when a previously created loader is being reset, and thus
+     * making its data unavailable.  The application should at this point
+     * remove any references it has to the Loader's data.
+     *
+     * @param loader The Loader that is being reset.
+     */
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        Log.v(LOG_TAG, "-->onLoaderReset");
+        mMovieInfoAdapterCursor.swapCursor(null);
     }
 
     /**
@@ -329,8 +456,9 @@ public class MovieListFragment extends Fragment {
 
         @Override
         protected void onPostExecute(ArrayList<MovieInfo> result) {
+            Log.v(LOG_TAG, "-->onPostExecute: ");
 
-            Log.v(LOG_TAG, "onPostExecite, old size(" + mMovieInfoList.size()
+            Log.v(LOG_TAG, "old size(" + mMovieInfoList.size()
                     + " additional movies (" + result.size() + ")");
             //TODO optimize to handle new informatoin and added information
             if (mMovieInfoList.size() < 1) {
@@ -340,22 +468,30 @@ public class MovieListFragment extends Fragment {
             }
             Log.v(LOG_TAG, "Now mMovieList size is " + mMovieInfoList.size());
             // handle putting posters into the movie adapter view
-            mMovieInfoAdapter.setMovie(mMovieInfoList);
+//            mMovieInfoAdapter.setMovie(mMovieInfoList);
 
             // put information into a database using the MovieProvider
             ContentValues[] movieContentValues = new ContentValues[result.size()];
             for (int i = 0; i < result.size(); i++) {
                 movieContentValues[i] = MovieDBUtility.getMovieValues(result.get(i));
             }
-            Log.v(LOG_TAG, "onPostExecute: about to try to get ContentResolver");
+            Log.v(LOG_TAG, "about to try to get ContentResolver");
 
             ContentResolver resolver = getActivity().getContentResolver();
             Log.v(LOG_TAG, "resolver obtained, now try to insert content values");
 
+            //TODO this should be done as an asynch task
+            int x = resolver.bulkInsert(MovieContract.MovieEntry.CONTENT_URI, movieContentValues);
+            Log.v(LOG_TAG, "finished bulkinsert with count = " + x);
 
-            resolver.bulkInsert(MovieContract.MovieEntry.CONTENT_URI, movieContentValues);
-            // mMovieProvider.bulkInsert(MovieContract.MovieEntry.CONTENT_URI, movieContentValues);
+            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
+            editor.putLong("lastQueried", System.currentTimeMillis());
+            editor.commit();
+            //
 
+            Log.v(LOG_TAG, "About to get a loader manager");
+            getLoaderManager().initLoader(0, null, me);
+            //TODO how to update cursor
         }
     }
 }

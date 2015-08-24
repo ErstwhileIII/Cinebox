@@ -31,6 +31,7 @@ public class MovieContract {
         // Database information for Movie information table and column definition
         public static final String TABLE_NAME = "movie_info";
         //Remember _ID column defined in BaseColumns
+        public static final String COL_id = BaseColumns._ID;
         public static final String COL_title = "title";
         public static final String COL_releaseDate = "release_date";
         public static final String COL_popularity = "popularity";

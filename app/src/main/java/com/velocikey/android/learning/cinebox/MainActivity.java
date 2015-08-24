@@ -1,6 +1,7 @@
 package com.velocikey.android.learning.cinebox;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.net.Uri;
@@ -19,10 +20,14 @@ public class MainActivity extends Activity
                  , MovieDetailFragment.OnMovieDetailFragmentListener{
     // Class fields
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private static final int DISPLAYED_FRAGMENT_MOVIELIST = 0;
+    private static final int DISPLAYED_FRAGMENT_MOVIEDETAIL = DISPLAYED_FRAGMENT_MOVIELIST + 1;
 
 
     // Object fields
     private FragmentManager fragmentManager;
+    private String INSTANCE_CURRENTFRAGMENT_NAME = "CurrentFragment";
+    private int mCurrentFragment = -1;
 
     /** Mainactiviyty controlling movie information
      *
@@ -31,33 +36,73 @@ public class MainActivity extends Activity
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Fragment currentFragment;
         super.onCreate(savedInstanceState);
-        Log.v(LOG_TAG, "onCreate: establish content for main view (" + R.layout.activity_main);
+        Log.v(LOG_TAG, "-->onCreate: ");
+
+        setContentView(R.layout.activity_main);
+
         if (savedInstanceState != null) {
             Log.v(LOG_TAG, "savedInstanceState info present");
             Log.v(LOG_TAG, savedInstanceState.toString());
-
+            mCurrentFragment = savedInstanceState.getInt(INSTANCE_CURRENTFRAGMENT_NAME);
+        } else {
+            mCurrentFragment = DISPLAYED_FRAGMENT_MOVIELIST;
+        }
+        switch (mCurrentFragment) {
+            case DISPLAYED_FRAGMENT_MOVIELIST:
+                currentFragment = new MovieListFragment();
+                break;
+            case DISPLAYED_FRAGMENT_MOVIEDETAIL:
+                currentFragment = new MovieDetailFragment();
+                break;
+            default:
+                Log.e(LOG_TAG, "Should not get here");
+                currentFragment = new MovieListFragment();
+                mCurrentFragment = DISPLAYED_FRAGMENT_MOVIELIST;
         }
         setContentView(R.layout.activity_main);
         // load the main movie list fragment
         fragmentManager = getFragmentManager();
-        MovieListFragment movieListFragment = new MovieListFragment();
-
         fragmentManager.beginTransaction()
-                .add(R.id.main_frame, movieListFragment)
+                .add(R.id.main_frame, currentFragment)
+                .addToBackStack("Movies")
                 .commit();
     }
 
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         Log.v(LOG_TAG, "onRestoreInstanceState");
-        //TOOD hande restore
+        int fragmentDesignation = savedInstanceState.getInt(INSTANCE_CURRENTFRAGMENT_NAME);
+        attachFragment(fragmentDesignation);
+    }
+
+    private void attachFragment(int fragmentDesignation) {
+        Fragment fragment;
+        switch (fragmentDesignation) {
+            case DISPLAYED_FRAGMENT_MOVIELIST: {
+                fragment = new MovieListFragment();
+                break;
+            }
+            case DISPLAYED_FRAGMENT_MOVIEDETAIL: {
+                fragment = new MovieDetailFragment();
+                break;
+            }
+            default:
+                fragment = new MovieListFragment();
+
+        }
+        getFragmentManager().beginTransaction()
+                .add(R.id.main_frame, fragment)
+                .addToBackStack("Movies")
+                .commit();
     }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         Log.v(LOG_TAG, "onSaveInstanceState");
         //TODO handle
+        savedInstanceState.putInt(INSTANCE_CURRENTFRAGMENT_NAME, mCurrentFragment);
     }
 
     @Override
@@ -113,6 +158,7 @@ public class MainActivity extends Activity
                 .replace(R.id.main_frame,movieDetailFragment)
                 .addToBackStack("detail")
                 .commit();
+        mCurrentFragment = DISPLAYED_FRAGMENT_MOVIEDETAIL;
     }
 
     /**

@@ -85,8 +85,11 @@ public class MovieDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getActivity();
-        Log.v(LOG_TAG, "onCreate: ");
-        if (getActivity() != null) {
+        Log.v(LOG_TAG, "-->onCreate: ");
+        if (getArguments() == null) {
+            Log.v(LOG_TAG, "no arguments");
+        } else {
+            Log.v(LOG_TAG, "argument count = " + getArguments().size());
             movieId = getArguments().getInt(ARG_movieId);
             title = getArguments().getString(ARG_title);
             releaseDate = getArguments().getString(ARG_releaseDate);
@@ -95,10 +98,11 @@ public class MovieDetailFragment extends Fragment {
             rating = getArguments().getFloat(ARG_rating);
             posterPath = getArguments().getString(ARG_posterPath);
         }
+
         if (savedInstanceState == null) {
-            Log.v(LOG_TAG, "onCreate: savedInstanceState is null");
+            Log.v(LOG_TAG, "-->onCreate: savedInstanceState is null");
         } else {
-            Log.v(LOG_TAG, "onCreate: savedInstanceState is NOT null");
+            Log.v(LOG_TAG, "-->onCreate: savedInstanceState is NOT null");
             movieId = savedInstanceState.getInt(ARG_movieId);
             title = savedInstanceState.getString(ARG_title);
             releaseDate = savedInstanceState.getString(ARG_releaseDate);
@@ -161,5 +165,4 @@ public class MovieDetailFragment extends Fragment {
         // TODO: Update argument type and name
         void onMovieDetailFragmentInteraction(Uri uri);
     }
-
 }
