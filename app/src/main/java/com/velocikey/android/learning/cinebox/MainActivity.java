@@ -1,23 +1,24 @@
 package com.velocikey.android.learning.cinebox;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.velocikey.android.learning.cinebox.utility.DebugHelper;
 import com.velocikey.android.learning.cinebox.webinfo.movie.MovieDetailFragment;
 import com.velocikey.android.learning.cinebox.webinfo.movie.MovieInfo;
 import com.velocikey.android.learning.cinebox.webinfo.movie.MovieListFragment;
 
+import java.util.Set;
+
 
 public class MainActivity extends Activity
         implements MovieListFragment.onMovieListFragmentListener
-                 , MovieDetailFragment.OnMovieDetailFragmentListener{
+        , MovieDetailFragment.OnMovieDetailFragmentListener {
     // Class fields
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int DISPLAYED_FRAGMENT_MOVIELIST = 0;
@@ -29,85 +30,90 @@ public class MainActivity extends Activity
     private String INSTANCE_CURRENTFRAGMENT_NAME = "CurrentFragment";
     private int mCurrentFragment = -1;
 
-    /** Mainactiviyty controlling movie information
+    /**
+     * Mainactiviyty controlling movie information
      *
      * @param savedInstanceState information if the status of this Activity was saved.
-     *
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Fragment currentFragment;
         super.onCreate(savedInstanceState);
         Log.v(LOG_TAG, "-->onCreate: ");
-
         setContentView(R.layout.activity_main);
 
-        if (savedInstanceState != null) {
-            Log.v(LOG_TAG, "savedInstanceState info present");
-            Log.v(LOG_TAG, savedInstanceState.toString());
-            mCurrentFragment = savedInstanceState.getInt(INSTANCE_CURRENTFRAGMENT_NAME);
-        } else {
+        if (savedInstanceState == null) {
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
+                    .addToBackStack("detail")
+                    .commit();
             mCurrentFragment = DISPLAYED_FRAGMENT_MOVIELIST;
+
+        } else {
+            Log.v(LOG_TAG, "**** Handle saved state *****");
         }
-        switch (mCurrentFragment) {
-            case DISPLAYED_FRAGMENT_MOVIELIST:
-                currentFragment = new MovieListFragment();
-                break;
-            case DISPLAYED_FRAGMENT_MOVIEDETAIL:
-                currentFragment = new MovieDetailFragment();
-                break;
-            default:
-                Log.e(LOG_TAG, "Should not get here");
-                currentFragment = new MovieListFragment();
-                mCurrentFragment = DISPLAYED_FRAGMENT_MOVIELIST;
-        }
-        setContentView(R.layout.activity_main);
-        // load the main movie list fragment
-        fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .add(R.id.main_frame, currentFragment)
-                .addToBackStack("Movies")
-                .commit();
     }
 
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
-        Log.v(LOG_TAG, "onRestoreInstanceState");
-        int fragmentDesignation = savedInstanceState.getInt(INSTANCE_CURRENTFRAGMENT_NAME);
-        attachFragment(fragmentDesignation);
-    }
+        Log.v(LOG_TAG, "-->onRestoreInstanceState");
+        Log.v(LOG_TAG, "***** Restore saved state *****");
+        //TODO optional place to add other information stored (if any)
+        mCurrentFragment = savedInstanceState.getInt(INSTANCE_CURRENTFRAGMENT_NAME);
+        Log.v(LOG_TAG, "(mCurrentFragment=" + mCurrentFragment + ")");
+        MovieListFragment movieListFragment = (MovieListFragment) getFragmentManager()
+                .getFragment(savedInstanceState, MovieListFragment.TAG_MOVIE_LIST_FRAGMENT);
+        MovieDetailFragment movieDetailFragment = (MovieDetailFragment) getFragmentManager()
+                .getFragment(savedInstanceState, MovieDetailFragment.TAG_MOVIE_DETAIL_FRAGMENT);
+        Log.v(LOG_TAG, DebugHelper.getMessage("movieListFragment", movieListFragment));
+        Log.v(LOG_TAG, DebugHelper.getMessage("movieDetailFragment", movieDetailFragment));
 
-    private void attachFragment(int fragmentDesignation) {
-        Fragment fragment;
-        switch (fragmentDesignation) {
+        Set<String> keySet = savedInstanceState.keySet();
+        for (String key : keySet) {
+            Log.v(LOG_TAG, "Key - " + key + "=" + savedInstanceState.get(key).toString());
+        }
+        //TODO consider same fragment tag name (not value) for all fragments as a model
+        //TODO handle layouts where both fragments are present
+
+        switch (mCurrentFragment) {
             case DISPLAYED_FRAGMENT_MOVIELIST: {
-                fragment = new MovieListFragment();
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
+                        .addToBackStack("detail")
+                        .commit();
                 break;
             }
             case DISPLAYED_FRAGMENT_MOVIEDETAIL: {
-                fragment = new MovieDetailFragment();
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
+                        .addToBackStack("detail")
+                        .commit();
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.main_frame, new MovieDetailFragment(), MovieDetailFragment.TAG_MOVIE_DETAIL_FRAGMENT)
+                        .addToBackStack("detail")
+                        .commit();
                 break;
             }
             default:
-                fragment = new MovieListFragment();
-
+                Log.e(LOG_TAG, "Unknown fragment state (" + mCurrentFragment + ")");
+                getFragmentManager().beginTransaction()
+                        .add(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
+                        .addToBackStack("detail")
+                        .commit();
+                mCurrentFragment = DISPLAYED_FRAGMENT_MOVIELIST;
+                break;
         }
-        getFragmentManager().beginTransaction()
-                .add(R.id.main_frame, fragment)
-                .addToBackStack("Movies")
-                .commit();
     }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        Log.v(LOG_TAG, "onSaveInstanceState");
+        Log.v(LOG_TAG, "-->onSaveInstanceState (mCurrentFragment=" + mCurrentFragment + ")");
         //TODO handle
         savedInstanceState.putInt(INSTANCE_CURRENTFRAGMENT_NAME, mCurrentFragment);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        Log.v(LOG_TAG, "onCreateOptionsMenu");
+        Log.v(LOG_TAG, "-->onCreateOptionsMenu");
         //TODO add menu item for settings
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -134,7 +140,8 @@ public class MainActivity extends Activity
 
     // Methods called from fragments
 
-    /** Called when the user selects a particular movie list item.
+    /**
+     * Called when the user selects a particular movie list item.
      *
      * @param movieInfo particular movie inforamtion item selected
      */
@@ -154,21 +161,25 @@ public class MainActivity extends Activity
         //TODO add posterpath (larger)
         movieDetailFragment.setArguments(args);
 
-        fragmentManager.beginTransaction()
-                .replace(R.id.main_frame,movieDetailFragment)
+        getFragmentManager().beginTransaction()
+                .replace(R.id.main_frame, movieDetailFragment)
                 .addToBackStack("detail")
                 .commit();
         mCurrentFragment = DISPLAYED_FRAGMENT_MOVIEDETAIL;
     }
 
     /**
-     * listener for selections in the MovieDetailFragment view spresented
+     * listener for selections in the MovieDetailFragment view presented
      *
-     * @param uri dummy or now
+     * @param action name of action to handle (for now)
      */
     @Override
-    public void onMovieDetailFragmentInteraction(Uri uri) {
+    public void onMovieDetailFragmentInteraction(String action) {
+        Log.v(LOG_TAG, "-->onMovieDetailFragmentInteraction");
         //TODO adjsut arguments and functions provided
+        if ("onDetach".equalsIgnoreCase(action)) {
+            mCurrentFragment = DISPLAYED_FRAGMENT_MOVIELIST;
+        }
 
     }
 }

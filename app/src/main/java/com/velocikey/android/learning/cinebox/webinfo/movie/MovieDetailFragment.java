@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import com.velocikey.android.learning.cinebox.R;
 import com.velocikey.android.learning.cinebox.SettingsActivity;
+import com.velocikey.android.learning.cinebox.webinfo.movie.data.MovieContract;
 
 
 /**
@@ -25,16 +26,18 @@ import com.velocikey.android.learning.cinebox.SettingsActivity;
  * {@link OnMovieDetailFragmentListener} interface
  * to handle interaction events.
  */
-public class MovieDetailFragment extends Fragment {
-    public static final String ARG_movieId = "movieId";
-    public static final String ARG_title = "title";
-    public static final String ARG_releaseDate = "releaseDate";
-    public static final String ARG_overview = "overview";
-    public static final String ARG_popularity = "popularity";
-    public static final String ARG_rating = "rating";
-    public static final String ARG_posterPath = "posterPath";
+public class MovieDetailFragment extends Fragment {// Class fields
+    //TODO consider passing position sql database)
+    public static final String ARG_movieId = MovieContract.MovieEntry.COL_id;
+    public static final String ARG_title = MovieContract.MovieEntry.COL_title;
+    public static final String ARG_releaseDate = MovieContract.MovieEntry.COL_releaseDate;
+    public static final String ARG_overview = MovieContract.MovieEntry.COL_overview;
+    public static final String ARG_popularity = MovieContract.MovieEntry.COL_popularity;
+    public static final String ARG_rating = MovieContract.MovieEntry.COL_rating;
+    public static final String ARG_posterPath = MovieContract.MovieEntry.COL_posterPath;
+    public static final String TAG_MOVIE_DETAIL_FRAGMENT = "MovieDetail";
     // Class fields
-    private static final String LOG_TAG = MovieDetailFragment.class.getSimpleName();//TODO consider passing position in data array (and the array of course)
+    private static final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
     // Object fields
     private static Context mContext;
     private static int movieId;
@@ -63,21 +66,29 @@ public class MovieDetailFragment extends Fragment {
         return fragment;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onMovieDetailFragmentInteraction(uri);
-        }
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Log.v(LOG_TAG, "-->onAttach(Context");
+        handleOnAttach(context);
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        try {
-            mListener = (OnMovieDetailFragmentListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnMovieListFragmentListener");
+        Log.v(LOG_TAG, "-->onAttach(Activity)");
+        handleOnAttach(activity);
+
+    }
+
+    private void handleOnAttach(Context context) {
+        if (mListener == null) {
+            try {
+                mListener = (OnMovieDetailFragmentListener) context;
+            } catch (ClassCastException e) {
+                throw new ClassCastException(context.toString()
+                        + " must implement OnMovieListFragmentListener");
+            }
         }
     }
 
@@ -116,10 +127,10 @@ public class MovieDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.v(LOG_TAG, "-->onCreateView:");
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
 
-        //((TextView) rootView.findViewById(R.id.detail_movie_id)).setText("" + movieId);
         ((TextView) rootView.findViewById(R.id.detail_title)).setText("" + title);
         ((TextView) rootView.findViewById(R.id.detail_release_date)).setText("" + releaseDate);
         ((TextView) rootView.findViewById(R.id.detail_popularity)).setText("" + popularity);
@@ -138,11 +149,15 @@ public class MovieDetailFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+        Log.v(LOG_TAG, "-->onDetach:");
+        //TODO make more general .. call return to main fragment
+        mListener.onMovieDetailFragmentInteraction("onDetach");
         mListener = null;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.v(LOG_TAG, "-->onOptionsItemSelected:");
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             startActivity(new Intent(getActivity(), SettingsActivity.class));
@@ -163,6 +178,6 @@ public class MovieDetailFragment extends Fragment {
      */
     public interface OnMovieDetailFragmentListener {
         // TODO: Update argument type and name
-        void onMovieDetailFragmentInteraction(Uri uri);
+        void onMovieDetailFragmentInteraction(String action);
     }
 }

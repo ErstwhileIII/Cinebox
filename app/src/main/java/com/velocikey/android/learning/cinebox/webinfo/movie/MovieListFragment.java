@@ -40,11 +40,11 @@ import java.util.ArrayList;
  * to handle interaction events.
  */
 public class MovieListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    public static final String TAG_MOVIE_LIST_FRAGMENT = "MovieList";
     // Class fields
     private static final String LOG_TAG = MovieListFragment.class.getSimpleName();
     private static final int MOVIE_DISPLAY_ROWS = 3;
     private static final long MOVIE_QUERY_STALE = 24 * 60 * 60 * 1000;
-
     // Object fields
     private static final int totalPages = 4; // total number of pages to request
     /**
@@ -63,6 +63,7 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
      * The next page to get information from using the asynchronous task
      */
     private int currentPage = 1;
+    private String lastQueryOrder = "";
 
     public MovieListFragment() {
         Log.v(LOG_TAG, "-->Constructor");
@@ -135,13 +136,19 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
 
     private void getMovies() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        //TODO put definitions into Strings.xml (no translate)
         long lastQuery = preferences.getLong("lastQueried", 0);
+        lastQueryOrder = preferences.getString("lastQueryOrder", "");
+        String movieOrder = preferences.getString(getString(R.string.pref_movie_order_key), getString(R.string.pref_movie_order_defaultvalue));
 
         Log.v(LOG_TAG, "lastquery time was " + lastQuery);
         long now = System.currentTimeMillis();
         Log.v(LOG_TAG, "now = " + now + ", stale cutoff = " + (now - MOVIE_QUERY_STALE));
-        boolean isStale = lastQuery < (now - MOVIE_QUERY_STALE);
+        boolean isStale = (lastQuery < (now - MOVIE_QUERY_STALE)) || !movieOrder.equalsIgnoreCase(lastQueryOrder);
+
         Log.v(LOG_TAG, "movie data stale? " + isStale);
+        Log.v(LOG_TAG, "lastQueryOrder=" + lastQueryOrder);
+        Log.v(LOG_TAG, "movieOrder" + movieOrder);
 
         if (isStale) {
 
@@ -150,7 +157,7 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
                 int deletedRows = this.getActivity().getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI, "1", null);
                 Log.v(LOG_TAG, "Rows deleted count = " + deletedRows);
             }
-            String movieOrder = preferences.getString(getString(R.string.pref_movie_order_key), getString(R.string.pref_movie_order_defaultvalue));
+            //String movieOrder = preferences.getString(getString(R.string.pref_movie_order_key), getString(R.string.pref_movie_order_defaultvalue));
             Log.v(LOG_TAG, "Requested movie order is: " + movieOrder);
             FetchMovieInfoTask movieInfoTask = new FetchMovieInfoTask();
             //TODO adjust to pass page to return
@@ -458,18 +465,6 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
         protected void onPostExecute(ArrayList<MovieInfo> result) {
             Log.v(LOG_TAG, "-->onPostExecute: ");
 
-            Log.v(LOG_TAG, "old size(" + mMovieInfoList.size()
-                    + " additional movies (" + result.size() + ")");
-            //TODO optimize to handle new informatoin and added information
-            if (mMovieInfoList.size() < 1) {
-                mMovieInfoList = result;
-            } else {
-                mMovieInfoList.addAll(result);
-            }
-            Log.v(LOG_TAG, "Now mMovieList size is " + mMovieInfoList.size());
-            // handle putting posters into the movie adapter view
-//            mMovieInfoAdapter.setMovie(mMovieInfoList);
-
             // put information into a database using the MovieProvider
             ContentValues[] movieContentValues = new ContentValues[result.size()];
             for (int i = 0; i < result.size(); i++) {
@@ -482,10 +477,11 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
 
             //TODO this should be done as an asynch task
             int x = resolver.bulkInsert(MovieContract.MovieEntry.CONTENT_URI, movieContentValues);
-            Log.v(LOG_TAG, "finished bulkinsert with count = " + x);
+            Log.v(LOG_TAG, "finished bulkInsert with count = " + x);
 
             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
             editor.putLong("lastQueried", System.currentTimeMillis());
+            editor.putString("lastQueryOrder", lastQueryOrder);
             editor.commit();
             //
 

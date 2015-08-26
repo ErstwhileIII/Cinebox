@@ -32,6 +32,7 @@ public class MovieInfoAdapter
 
     public MovieInfoAdapter(Context context, ArrayList<MovieInfo> movieInfo,
                             MovieListFragment.onMovieListFragmentListener listener) {
+        Log.v(LOG_TAG, "-->Constructor");
         mContext = context;
         mMovieInformation = movieInfo;
         mMovieListListener = listener;
@@ -39,6 +40,7 @@ public class MovieInfoAdapter
 
     @Override
     public MovieInfoViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        Log.v(LOG_TAG, "-->onCreateViewHolder");
         View itemView = LayoutInflater
                             .from(viewGroup.getContext())
                             .inflate(R.layout.movie_list_poster, viewGroup, false);
@@ -47,9 +49,8 @@ public class MovieInfoAdapter
 
     @Override
     public void onBindViewHolder(MovieInfoViewHolder holder, int position) {
-//        Log.v(LOG_TAG,"onBindViewHolder: position is " + position);
+        Log.v(LOG_TAG, "-->onBindViewHolder:");
         String posterPath = mMovieInformation.get(position).getFullPosterPath(185);
-//        Log.v(LOG_TAG,"loading image from: " + posterPath);
         Uri uri = Uri.parse(posterPath);
         //TODO add error and placeholder drawings
         Picasso.with(mContext).load(uri).into(holder.poster);
@@ -70,7 +71,7 @@ public class MovieInfoAdapter
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
-        Log.v(LOG_TAG, "onAttachedToRecyclerView");
+        Log.v(LOG_TAG, "-->onAttachedToRecyclerView");
     }
 
     /**
@@ -80,7 +81,7 @@ public class MovieInfoAdapter
     @Override
     public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
-        Log.v(LOG_TAG, "onDetachedFromRecyclerView");
+        Log.v(LOG_TAG, "-->onDetachedFromRecyclerView");
     }
 
     /**
@@ -89,13 +90,12 @@ public class MovieInfoAdapter
      * @param movieInformation the
      */
     public void setMovie(ArrayList<MovieInfo> movieInformation) {
-        Log.v(LOG_TAG, "setMovie");
+        Log.v(LOG_TAG, "-->setMovie");
         if (mMovieInformation == null || mMovieInformation.size() == 0) {
             mMovieInformation = movieInformation;
             this.notifyDataSetChanged();
         } else {
             //TODO better way to handle extensions?
-            Log.v(LOG_TAG, "setMovie: old size (" + mMovieInformation.size()+ ") , new size=" + movieInformation.size());
             mMovieInformation = movieInformation;
             this.notifyItemRangeChanged(0, movieInformation.size());
         }

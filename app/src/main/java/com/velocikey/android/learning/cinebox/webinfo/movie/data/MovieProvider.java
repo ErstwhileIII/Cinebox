@@ -67,9 +67,8 @@ public class MovieProvider extends ContentProvider {
      */
     @Override
     public boolean onCreate() {
-        Log.v(LOG_TAG, "onCreate:");
+        Log.v(LOG_TAG, "-->onCreate:");
         mMovieDBHelper = new MovieDBHelper(getContext());
-        Log.v(LOG_TAG, "onCreate, new mMovieDBHelper is null? " + (mMovieDBHelper == null));
         return true;
     }
 
@@ -160,7 +159,6 @@ public class MovieProvider extends ContentProvider {
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
-        Log.v(LOG_TAG, "getType:");
 
         switch (sUriMatcher.match(uri)) {
             case MOVIE_LIST:
@@ -194,7 +192,6 @@ public class MovieProvider extends ContentProvider {
         Log.v(LOG_TAG, "insert: ");
         db = mMovieDBHelper.getWritableDatabase();
         int match = sUriMatcher.match(uri);
-        Log.v(LOG_TAG, "match is " + match);
 
         switch (match) {
             case MOVIE_LIST:
@@ -272,7 +269,7 @@ public class MovieProvider extends ContentProvider {
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         int deletedRows;
-        Log.v(LOG_TAG, "delete (where clause = " + selection);
+        Log.v(LOG_TAG, "delete (where clause = " + selection + ")");
 
         final SQLiteDatabase db = mMovieDBHelper.getWritableDatabase();
 

@@ -105,7 +105,8 @@ public class WebApiTMDB extends WebApi {
                 Log.e(LOG_TAB, "No output from TMDB");
             }
             long qDuration = System.currentTimeMillis() - qStart;
-            Log.v(LOG_TAB, "Queary time: " + qDuration);
+            //TODO keep stats .. add statistics framework to use
+//            Log.v(LOG_TAB, "Queary time: " + qDuration);
 //            Log.v(LOG_TAB, " raw JSON size is " + rawJson.length());
 //            Log.v(LOG_TAB, " initial info |" + rawJson.substring(0,Math.min(rawJson.length(),10)));
 
