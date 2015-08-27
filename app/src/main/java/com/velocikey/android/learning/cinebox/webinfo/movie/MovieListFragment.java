@@ -76,7 +76,7 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
         Log.v(LOG_TAG, "-->onInflate(Context)");
     }
 
-    //TODO remove since depracated nandle using context instead . but check linke onAttach
+    //TODO remove since depracated nandle using context instead . but check link onAttach
     @Override
     public void onInflate(Activity activity, AttributeSet attributeSet, Bundle savedInstanceState) {
         super.onInflate(activity, attributeSet, savedInstanceState);
@@ -84,7 +84,7 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
     }
 
     /**
-     * (Lifecycle order #1) onAttack
+     * (Lifecycle order #1) onAttach
      * Save the calling activity for use as a click listener when an item is selected in the
      * list of movies. Make sure that the appropriate interface is implemented in the calling
      * activity (throwing an exception if not).

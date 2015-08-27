@@ -29,6 +29,7 @@ public class MainActivity extends Activity
     private FragmentManager fragmentManager;
     private String INSTANCE_CURRENTFRAGMENT_NAME = "CurrentFragment";
     private int mCurrentFragment = -1;
+    private boolean isTwoFrame = false;
 
     /**
      * Mainactiviyty controlling movie information
@@ -40,20 +41,33 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         Log.v(LOG_TAG, "-->onCreate: ");
         setContentView(R.layout.activity_main);
+        isTwoFrame = findViewById(R.id.movie_detail_container) != null;
+        Log.v(LOG_TAG, "isTwoFrame " + isTwoFrame);
 
-        if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
-                    .commit();
-            mCurrentFragment = DISPLAYED_FRAGMENT_MOVIELIST;
+        if (isTwoFrame) {
 
+            if (savedInstanceState == null) {
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.movie_list_container, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
+                        .commit();
+            } else {
+                Log.v(LOG_TAG, "**** Handle saved state *****");
+                // Shouldn't have to do anything here since both fragments are visible
+            }
         } else {
-            Log.v(LOG_TAG, "**** Handle saved state *****");
-            int backCount = getFragmentManager().getBackStackEntryCount();
-            Log.v(LOG_TAG, "Back stack entry count = " + backCount);
-            for (int i = 0; i < backCount; i++) {
-                FragmentManager.BackStackEntry xxx = getFragmentManager().getBackStackEntryAt(i);
-                Log.v(LOG_TAG, i + ". name-" + xxx.getName());
+            if (savedInstanceState == null) {
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
+                        .commit();
+                mCurrentFragment = DISPLAYED_FRAGMENT_MOVIELIST;
+            } else {
+                Log.v(LOG_TAG, "**** Handle saved state *****");
+                int backCount = getFragmentManager().getBackStackEntryCount();
+                Log.v(LOG_TAG, "Back stack entry count = " + backCount);
+                for (int i = 0; i < backCount; i++) {
+                    FragmentManager.BackStackEntry xxx = getFragmentManager().getBackStackEntryAt(i);
+                    Log.v(LOG_TAG, i + ". name-" + xxx.getName());
+                }
             }
         }
     }
@@ -62,6 +76,9 @@ public class MainActivity extends Activity
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         Log.v(LOG_TAG, "-->onRestoreInstanceState");
         Log.v(LOG_TAG, "***** Restore saved state *****");
+        if (isTwoFrame) {
+            Log.v(LOG_TAG, "Why are we here with two fragments visible?!");
+        }
         //TODO optional place to add other information stored (if any)
         mCurrentFragment = savedInstanceState.getInt(INSTANCE_CURRENTFRAGMENT_NAME);
         Log.v(LOG_TAG, "(mCurrentFragment=" + mCurrentFragment + ")");
@@ -163,8 +180,15 @@ public class MainActivity extends Activity
         //TODO add posterpath (larger)
         movieDetailFragment.setArguments(args);
 
+        int fragmentId;
+        Log.v(LOG_TAG, "is two frame? " + isTwoFrame);
+        if (isTwoFrame) {
+            fragmentId = R.id.movie_detail_container;
+        } else {
+            fragmentId = R.id.main_frame;
+        }
         getFragmentManager().beginTransaction()
-                .replace(R.id.main_frame, movieDetailFragment)
+                .replace(fragmentId, movieDetailFragment)
                 .addToBackStack("detail")
                 .commit();
         mCurrentFragment = DISPLAYED_FRAGMENT_MOVIEDETAIL;
