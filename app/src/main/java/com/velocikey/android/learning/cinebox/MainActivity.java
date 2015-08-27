@@ -95,22 +95,43 @@ public class MainActivity extends Activity
         }
         //TODO consider same fragment tag name (not value) for all fragments as a model
         //TODO handle layouts where both fragments are present
+        Log.v(LOG_TAG, "isTwoFrame = " + isTwoFrame);
 
         switch (mCurrentFragment) {
             case DISPLAYED_FRAGMENT_MOVIELIST: {
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
-                        .commit();
+                if (isTwoFrame) {
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.movie_list_container, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
+                            .commit();
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.movie_detail_container, new MovieDetailFragment(), MovieDetailFragment.TAG_MOVIE_DETAIL_FRAGMENT)
+                            .addToBackStack("detail")
+                            .commit();
+                } else {
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
+                            .commit();
+                }
                 break;
             }
             case DISPLAYED_FRAGMENT_MOVIEDETAIL: {
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
-                        .commit();
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.main_frame, new MovieDetailFragment(), MovieDetailFragment.TAG_MOVIE_DETAIL_FRAGMENT)
-                        .addToBackStack("detail")
-                        .commit();
+                if (isTwoFrame) {
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.movie_list_container, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
+                            .commit();
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.movie_detail_container, new MovieDetailFragment(), MovieDetailFragment.TAG_MOVIE_DETAIL_FRAGMENT)
+                            .addToBackStack("detail")
+                            .commit();
+                } else {
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
+                            .commit();
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.main_frame, new MovieDetailFragment(), MovieDetailFragment.TAG_MOVIE_DETAIL_FRAGMENT)
+                            .addToBackStack("detail")
+                            .commit();
+                }
                 break;
             }
             default:

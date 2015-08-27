@@ -157,7 +157,7 @@ public class MovieInfoAdapterCursor
 
         Uri uri = Uri.parse(posterPath);
         //TODO add error and placeholder drawings
-        Picasso.with(mContext).load(uri).into(holder.poster);
+        Picasso.with(mContext).load(uri).fit().into(holder.poster);
     }
 
     @Override
