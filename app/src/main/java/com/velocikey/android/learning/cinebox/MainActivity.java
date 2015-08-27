@@ -44,12 +44,17 @@ public class MainActivity extends Activity
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
                     .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
-                    .addToBackStack("detail")
                     .commit();
             mCurrentFragment = DISPLAYED_FRAGMENT_MOVIELIST;
 
         } else {
             Log.v(LOG_TAG, "**** Handle saved state *****");
+            int backCount = getFragmentManager().getBackStackEntryCount();
+            Log.v(LOG_TAG, "Back stack entry count = " + backCount);
+            for (int i = 0; i < backCount; i++) {
+                FragmentManager.BackStackEntry xxx = getFragmentManager().getBackStackEntryAt(i);
+                Log.v(LOG_TAG, i + ". name-" + xxx.getName());
+            }
         }
     }
 
@@ -78,14 +83,12 @@ public class MainActivity extends Activity
             case DISPLAYED_FRAGMENT_MOVIELIST: {
                 getFragmentManager().beginTransaction()
                         .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
-                        .addToBackStack("detail")
                         .commit();
                 break;
             }
             case DISPLAYED_FRAGMENT_MOVIEDETAIL: {
                 getFragmentManager().beginTransaction()
                         .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
-                        .addToBackStack("detail")
                         .commit();
                 getFragmentManager().beginTransaction()
                         .replace(R.id.main_frame, new MovieDetailFragment(), MovieDetailFragment.TAG_MOVIE_DETAIL_FRAGMENT)
@@ -96,8 +99,7 @@ public class MainActivity extends Activity
             default:
                 Log.e(LOG_TAG, "Unknown fragment state (" + mCurrentFragment + ")");
                 getFragmentManager().beginTransaction()
-                        .add(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
-                        .addToBackStack("detail")
+                        .replace(R.id.main_frame, new MovieListFragment(), MovieListFragment.TAG_MOVIE_LIST_FRAGMENT)
                         .commit();
                 mCurrentFragment = DISPLAYED_FRAGMENT_MOVIELIST;
                 break;
