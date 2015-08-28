@@ -49,7 +49,7 @@ public class TestDB extends AndroidTestCase {
         assertTrue("Errr: unable to query database for table information", c.moveToFirst());
 
         final HashSet<String> columns = new HashSet<>();
-        columns.add(MovieContract.MovieEntry._ID);
+        columns.add(MovieContract.MovieEntry.COL_id);
         columns.add(MovieContract.MovieEntry.COL_title);
         columns.add(MovieContract.MovieEntry.COL_releaseDate);
         columns.add(MovieContract.MovieEntry.COL_popularity);

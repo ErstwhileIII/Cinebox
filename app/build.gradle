@@ -22,10 +22,13 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
-    //for RecyclerView
-    // for image loading and caching
+    // for JUnit testing (later version of junit?)
+    //testCompile 'junit:junit:4.12'
 
+    //for RecyclerView
     compile 'com.android.support:recyclerview-v7:23.0.0'
+
+    // for image loading and caching
     compile 'com.squareup.picasso:picasso:2.5.2'
     //compile 'com.android.support:support-v4:22.2.1'
     compile 'com.android.support:support-v4:23.0.0'

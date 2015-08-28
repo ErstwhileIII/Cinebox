@@ -32,6 +32,7 @@ public class WebApi {
         String results = "";
         BufferedReader reader = null;
         HttpURLConnection urlConnection = null;
+        Log.v(LOG_TAG, "getting JSON information for " + url.toString());
 
         try {
             urlConnection = (HttpsURLConnection) url.openConnection();
@@ -39,6 +40,7 @@ public class WebApi {
             urlConnection.connect();
             int responseCode = urlConnection.getResponseCode();
             //TODO handle unexpected response codes
+//            Log.v(LOG_TAG, "Response code " + responseCode);
 
             InputStream inputStream = urlConnection.getInputStream();
             StringBuilder buffer = new StringBuilder();
@@ -72,6 +74,8 @@ public class WebApi {
                 }
             }
         }
+//        Log.v(LOG_TAG, "Results size is " + results.length());
+//        Log.v(LOG_TAG, "Results = /n" + results);
 
         return results;
     }

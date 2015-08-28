@@ -14,8 +14,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-/** The class provides all interaction with The MovieDatabase web api.
- *
+/**
+ * The class provides all interaction with The MovieDatabase web api.
+ * <p/>
  * Created by Joseph White on 2015 Jul 13.
  */
 public class WebApiTMDB extends WebApi {
@@ -35,6 +36,7 @@ public class WebApiTMDB extends WebApi {
     // Images from TMDB .. w185 is 184w, 278h
     private static final String IMAGE_BASE_URL = TMDB_PROTOCOL + "image.tmdb.org/t/p";
     private static final String IMAGE_SIZE = "w185";
+    private static final String GET_MOVIE_VIDEOS = API_BASE_URL + "/" + API_Version + "/movie/";
 
     // Discover movie paramaters
     private static final String PARAM_ORDERBY = "sort_by";
@@ -46,8 +48,8 @@ public class WebApiTMDB extends WebApi {
     private static final String TMDB_REPORTS = "results";
     private static final String THDB_PAGES = "total_pages";
     private static final String TMDB_RESULTS = "total_results";
-    // strucure within each result
 
+    // structure within each result
     private static final String TMDB_ID = "id";
     private static final String TMDB_POSTERPATH = "poster_path";
     private static final String TMDB_TITLE = "title";
@@ -55,6 +57,18 @@ public class WebApiTMDB extends WebApi {
     private static final String TMDB_RELEASEDATE = "release_date";
     private static final String TMDB_POPULARITY = "popularity";
     private static final String TMDB_VOTEAVERAGE = "vote_average";
+
+    // structure witin videos (/movie/<id>/videos
+    private static final String TMDB_VIDEO_MOVIEID = "id";
+    private static final String TMDB_VIDEO_RESULTS = "results";
+    // id, results[ see below ]
+    private static final String TMDB_VIDEO_ID = "id";
+    private static final String TMDB_VIDEO_LANGUASGE = "iso_639_1";
+    private static final String TMDB_VIDEO_KEY = "key";
+    private static final String TMDB_VIDEO_NAME = "name";
+    private static final String TMDB_VIDEO_SITE = "site";
+    private static final String TMDB_VIDEO_SIZE = "size";
+    private static final String TMDB_VIDEO_TYPE = "type";
 
     // Object fields
     Uri builtUri;
@@ -83,14 +97,14 @@ public class WebApiTMDB extends WebApi {
         // Continue making web api requests until sufficient results are obtained (unless there is an error)
         while ((page < startPage + pagesWanted) && !error) {
             // TMDB pages start at 1, not zero
-            Uri builtUri = Uri.parse(DISCOVER_MOVIES).buildUpon()
+            Uri movieUri = Uri.parse(DISCOVER_MOVIES).buildUpon()
                     .appendQueryParameter(PARAM_ORDERBY, orderBy)
                     .appendQueryParameter(PARAM_PAGE, "" + page)
                     .appendQueryParameter(API_KEY_NAME, API_KEY_VALUE)
                     .build();
             page++;
             try {
-                url = new URL(builtUri.toString());
+                url = new URL(movieUri.toString());
             } catch (MalformedURLException e) {
                 Log.e(LOG_TAB, "Malformed TMDB URL:");
                 //TODO handle error condition
@@ -137,6 +151,68 @@ public class WebApiTMDB extends WebApi {
                 error = true;
             }
         }
+        return results;
+    }
+
+    public ArrayList<MovieVideoInfo> getMovieVideos(int movieId) {
+        URL url;
+        JSONObject videoList;
+        ArrayList<MovieVideoInfo> results = new ArrayList<>(1);
+
+//        Log.v(LOG_TAB, "--> getMovieVideos (" + movieId + ")");
+//        Log.v(LOG_TAB, "************");
+
+        // form the TMDB query to get videos for the movie
+        Uri getVideosUri = Uri.parse(GET_MOVIE_VIDEOS + movieId + "/videos?").buildUpon()
+                .appendQueryParameter(API_KEY_NAME, API_KEY_VALUE)
+                .build();
+
+
+        try {
+            url = new URL(getVideosUri.toString());
+            Log.v(LOG_TAB, "URL is " + url);
+        } catch (MalformedURLException e) {
+            Log.e(LOG_TAB, "Malformed TMDB URL:", e);
+            //TODO handle error condition
+            return null;
+        }
+
+        // get the video information for the movie JSON information to work on
+        long qStart = System.currentTimeMillis();
+//        Log.v(LOG_TAB, "about to call method to get JSON information");
+        String rawJson = getJson(url, "GET");
+        if (rawJson.equalsIgnoreCase("")) {
+            Log.e(LOG_TAB, "No output from TMDB");
+        }
+        long qDuration = System.currentTimeMillis() - qStart;
+        //TODO keep stats .. add statistics framework to use
+//            Log.v(LOG_TAB, "Queary time: " + qDuration);
+//            Log.v(LOG_TAB, " raw JSON size is " + rawJson.length());
+//            Log.v(LOG_TAB, " initial info |" + rawJson.substring(0,Math.min(rawJson.length(),10)));
+
+        //TODO handle JSON parsing exception
+        try {
+            videoList = new JSONObject(rawJson);
+            JSONArray videos = videoList.getJSONArray(TMDB_REPORTS);
+
+            // Now add info for each video
+            for (int i = 0; i < videos.length(); i++) {
+                JSONObject rawMovieInfo = videos.getJSONObject(i);
+
+                String id = rawMovieInfo.getString(TMDB_VIDEO_ID);
+                String language = rawMovieInfo.getString(TMDB_VIDEO_LANGUASGE);
+                String key = rawMovieInfo.getString(TMDB_VIDEO_KEY);
+                String name = rawMovieInfo.getString(TMDB_VIDEO_NAME);
+                String site = rawMovieInfo.getString(TMDB_VIDEO_SITE);
+                int size = rawMovieInfo.getInt(TMDB_VIDEO_SIZE);
+                String type = rawMovieInfo.getString(TMDB_VIDEO_TYPE);
+                results.add(new MovieVideoInfo(id, language, key, name, site, size, type));
+            }
+        } catch (JSONException e) {
+            Log.e(LOG_TAB, "JSON parsing error", e);
+            return null;
+        }
+//        Log.v(LOG_TAB, "returning " + results.size());
         return results;
     }
 }

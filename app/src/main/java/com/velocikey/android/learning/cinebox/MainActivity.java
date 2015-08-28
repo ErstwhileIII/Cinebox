@@ -30,6 +30,7 @@ public class MainActivity extends Activity
     private String INSTANCE_CURRENTFRAGMENT_NAME = "CurrentFragment";
     private int mCurrentFragment = -1;
     private boolean isTwoFrame = false;
+    private String mMovieOrder = "";
 
     /**
      * Mainactiviyty controlling movie information
@@ -143,6 +144,19 @@ public class MainActivity extends Activity
                 break;
         }
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.v(LOG_TAG, "-->onResume");
+
+        MovieListFragment movieListFragment = (MovieListFragment) getFragmentManager().findFragmentByTag(MovieListFragment.TAG_MOVIE_LIST_FRAGMENT);
+        if (movieListFragment != null) {
+            Log.v(LOG_TAG, "calling getMovies in MovieListFragment");
+            movieListFragment.getMovies();
+        }
+    }
+
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {

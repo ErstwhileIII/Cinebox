@@ -8,12 +8,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.GridLayoutManager;
@@ -26,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 
 import com.velocikey.android.learning.cinebox.R;
+import com.velocikey.android.learning.cinebox.utility.Utility;
 import com.velocikey.android.learning.cinebox.webinfo.movie.data.MovieContract;
 import com.velocikey.android.learning.cinebox.webinfo.movie.data.MovieDBUtility;
 import com.velocikey.android.learning.cinebox.webinfo.movie.data.MovieProvider;
@@ -50,6 +49,9 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
     /**
      * Listener in activity that attached this fragment
      */
+    private Context mContext;
+    private boolean isLoadingMoviesFromWeb = false;
+    private String mMovieOrder;
     private MovieListFragment me;
     private onMovieListFragmentListener mListener;
     private MovieProvider mMovieProvider = new MovieProvider();
@@ -63,7 +65,6 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
      * The next page to get information from using the asynchronous task
      */
     private int currentPage = 1;
-    private String lastQueryOrder = "";
 
     public MovieListFragment() {
         Log.v(LOG_TAG, "-->Constructor");
@@ -120,6 +121,7 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
         super.onCreate(savedInstanceState);
         //mMovieInfoList = new ArrayList<>();
         Log.v(LOG_TAG, "-->onCreate: ");
+        mContext = getActivity();
 
         if (savedInstanceState != null) {
             //TODO Handle restoration
@@ -134,34 +136,42 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
 
     }
 
-    private void getMovies() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        //TODO put definitions into Strings.xml (no translate)
-        long lastQuery = preferences.getLong("lastQueried", 0);
-        lastQueryOrder = preferences.getString("lastQueryOrder", "");
-        String movieOrder = preferences.getString(getString(R.string.pref_movie_order_key), getString(R.string.pref_movie_order_defaultvalue));
+    /**
+     * Reloads movies into database if the preferred order has changes or the data is stale (older
+     * that the window (currently 3 hours);
+     */
+    public void getMovies() {
+        //Return if already loading
+        if (isLoadingMoviesFromWeb) {
+            return;
+        }
 
-        Log.v(LOG_TAG, "lastquery time was " + lastQuery);
-        long now = System.currentTimeMillis();
-        Log.v(LOG_TAG, "now = " + now + ", stale cutoff = " + (now - MOVIE_QUERY_STALE));
-        boolean isStale = (lastQuery < (now - MOVIE_QUERY_STALE)) || !movieOrder.equalsIgnoreCase(lastQueryOrder);
+        // Reset database if the movieOrder has changed or the data is "old"
+        String lastOrder = Utility.getLastQueryOrder(mContext);
+        String prefOrder = Utility.getPreferedMovieOrder(mContext);
+        boolean isNewOrder = !lastOrder.equalsIgnoreCase(prefOrder);
+        long lastQueryTime = Utility.getLastQueryTime(mContext);
+        boolean isStale = System.currentTimeMillis() > (lastQueryTime + MOVIE_QUERY_STALE);
+        Log.v(LOG_TAG, "isNewOrder=" + isNewOrder + ", isStale=" + isStale + ", loading=" + isLoadingMoviesFromWeb);
 
-        Log.v(LOG_TAG, "movie data stale? " + isStale);
-        Log.v(LOG_TAG, "lastQueryOrder=" + lastQueryOrder);
-        Log.v(LOG_TAG, "movieOrder" + movieOrder);
-
-        if (isStale) {
-
-            if (lastQuery > 0) {
+        if (isStale || isNewOrder) {
+            mMovieOrder = prefOrder;
+            //TODO replace with count of rows in database
+            if (lastQueryTime > 0) {
                 Log.v(LOG_TAG, "getMovies: delete all rows");
                 int deletedRows = this.getActivity().getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI, "1", null);
                 Log.v(LOG_TAG, "Rows deleted count = " + deletedRows);
             }
             //String movieOrder = preferences.getString(getString(R.string.pref_movie_order_key), getString(R.string.pref_movie_order_defaultvalue));
-            Log.v(LOG_TAG, "Requested movie order is: " + movieOrder);
+            Log.v(LOG_TAG, "Requested movie order is: " + mMovieOrder);
+            //TODO see if we need to handle interruption between start and finish
+
+            Utility.setLastQueryInfo(mContext, mMovieOrder, System.currentTimeMillis());
+
             FetchMovieInfoTask movieInfoTask = new FetchMovieInfoTask();
             //TODO adjust to pass page to return
-            movieInfoTask.execute(movieOrder);
+            isLoadingMoviesFromWeb = true;
+            movieInfoTask.execute(mMovieOrder);
         } else {
             Log.v(LOG_TAG, "About to get a loader manager");
             getLoaderManager().initLoader(0, null, me);
@@ -464,6 +474,7 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
         @Override
         protected void onPostExecute(ArrayList<MovieInfo> result) {
             Log.v(LOG_TAG, "-->onPostExecute: ");
+            isLoadingMoviesFromWeb = false;
 
             // put information into a database using the MovieProvider
             ContentValues[] movieContentValues = new ContentValues[result.size()];
@@ -479,10 +490,7 @@ public class MovieListFragment extends Fragment implements LoaderManager.LoaderC
             int x = resolver.bulkInsert(MovieContract.MovieEntry.CONTENT_URI, movieContentValues);
             Log.v(LOG_TAG, "finished bulkInsert with count = " + x);
 
-            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
-            editor.putLong("lastQueried", System.currentTimeMillis());
-            editor.putString("lastQueryOrder", lastQueryOrder);
-            editor.commit();
+            Utility.setLastQueryInfo(mContext, mMovieOrder, System.currentTimeMillis());
             //
 
             Log.v(LOG_TAG, "About to get a loader manager");
