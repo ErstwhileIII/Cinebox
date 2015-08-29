@@ -13,9 +13,9 @@ import com.velocikey.android.learning.cinebox.webinfo.movie.MovieDetailFragment;
 import com.velocikey.android.learning.cinebox.webinfo.movie.MovieInfo;
 import com.velocikey.android.learning.cinebox.webinfo.movie.MovieListFragment;
 
-import java.util.Set;
-
-
+/**
+ * Initial activity for Movie project
+ */
 public class MainActivity extends Activity
         implements MovieListFragment.onMovieListFragmentListener
         , MovieDetailFragment.OnMovieDetailFragmentListener {
@@ -90,10 +90,10 @@ public class MainActivity extends Activity
         Log.v(LOG_TAG, DebugHelper.getMessage("movieListFragment", movieListFragment));
         Log.v(LOG_TAG, DebugHelper.getMessage("movieDetailFragment", movieDetailFragment));
 
-        Set<String> keySet = savedInstanceState.keySet();
-        for (String key : keySet) {
-            Log.v(LOG_TAG, "Key - " + key + "=" + savedInstanceState.get(key).toString());
-        }
+//        Set<String> keySet = savedInstanceState.keySet();
+//        for (String key : keySet) {
+//            Log.v(LOG_TAG, "Key - " + key + "=" + savedInstanceState.get(key).toString());
+//        }
         //TODO consider same fragment tag name (not value) for all fragments as a model
         //TODO handle layouts where both fragments are present
         Log.v(LOG_TAG, "isTwoFrame = " + isTwoFrame);
