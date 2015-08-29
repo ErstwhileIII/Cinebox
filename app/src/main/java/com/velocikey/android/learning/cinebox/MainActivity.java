@@ -15,6 +15,7 @@ import com.velocikey.android.learning.cinebox.webinfo.movie.MovieListFragment;
 
 /**
  * Initial activity for Movie project
+ * August 29, 2015
  */
 public class MainActivity extends Activity
         implements MovieListFragment.onMovieListFragmentListener
